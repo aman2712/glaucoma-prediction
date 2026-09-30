@@ -282,3 +282,59 @@ linkage was applied and nothing else was), and the limitation note verbatim.
   grouping, and the split-quarantine logic (external overlap, release
   overlap, and the in-domain-test both-classes guard) — run with
   `python3 -m unittest test_preparation -v` from `script/tests/`.
+
+## 7. Leakage and limitations
+
+The project brief asks for nine points to be discussed explicitly. Four are
+already covered above, so just a pointer here rather than repeating them:
+bilateral eyes staying in the same split is handled for PAPILA and for the 41
+Bosch test images, and is exactly why the rest of CHAKSU is provisional (§5);
+external test data isn't used for tuning, since the mask reference was chosen
+from the published CHAKSU numbers rather than our own held-out data (§1);
+expert measurements are never fed to the model, since `expert_measurements.csv`
+is written separately and `load_images.py` doesn't read it (§2). Preprocessing
+statistics are also not an issue here, since `load_images.py` normalises with
+fixed ImageNet constants rather than anything fitted to a split, so there's no
+statistic that could leak from test into train in the first place.
+
+That leaves five that need proper treatment:
+
+**Augmentation must preserve anatomical geometry.** Out of scope of this
+pipeline, since no augmentation happens here, but worth flagging to whoever
+writes the training loop: a horizontal flip swaps which side of the disc is
+nasal and which is temporal, which matters for the ISNT rule the CHAKSU paper
+itself uses to assess glaucomatous change. Augmentation choices need to
+preserve orientation, not just resize or crop safely.
+
+**Segmentation labels and glaucoma labels use different clinical
+definitions.** This is real and not something preprocessing can fix. CHAKSU's
+glaucoma decision comes from a five-expert vote on the whole photograph, and
+its disc/cup segmentation is a separate annotation task by the same experts,
+not derived from that decision. PAPILA is worse in this respect, its diagnosis
+is set from intraocular pressure, visual field and pachymetry, not from the
+fundus photo at all. PAPILA's own baseline experiments show the gap directly:
+their vCDR-based classifier (built purely from segmentation) reaches an AUC of
+0.88 online and 0.76 onsite, against 0.98+ for a CNN trained on the actual
+diagnosis label. A model that segments the disc and cup well is not the same
+as one that classifies glaucoma well.
+
+**Datasets may contain hidden camera or institution shortcuts.** Every image
+carries its camera and dataset in the manifest, so this is checkable, but it
+hasn't been checked yet. Worth doing before trusting the external-test result:
+PAPILA is entirely Topcon and no CHAKSU image is, so a classifier could partly
+key on camera or compression artefacts rather than disease, and the AUROC on
+`external_test` wouldn't tell you that had happened.
+
+**Public datasets often contain too few early-glaucoma cases.** Both datasets
+give a binary label (suspect/normal, or glaucoma/healthy) with no severity
+staging, so there's no way to tell from the label alone whether the glaucoma
+cases skew toward advanced, clearly visible disease rather than early or
+borderline cases. Combined with the small positive counts already flagged in
+§3, this limits what the sensitivity numbers can actually claim.
+
+**High performance on curated datasets does not establish clinical safety.**
+Both datasets are consented, single-institution, and not adjusted for
+prevalence, CHAKSU and PAPILA both recruit from clinic populations where
+glaucoma is far more common than in the general population being screened. A
+good AUROC here shows the model can tell these curated images apart. It says
+nothing about whether the model is safe to screen with.

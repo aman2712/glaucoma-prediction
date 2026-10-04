@@ -1,0 +1,43 @@
+{
+  "config_sha256": "95028c1353e0d2f5b75ada367d17b4ad69451f243d775068bc343edc16c64ce0",
+  "exact_pixel_duplicate_sets": [
+    [
+      "chaksu_Bosch_train_Image102",
+      "chaksu_Bosch_train_Image120"
+    ],
+    [
+      "chaksu_Bosch_train_Image107",
+      "chaksu_Bosch_train_Image128"
+    ],
+    [
+      "chaksu_Bosch_train_Image108",
+      "chaksu_Bosch_train_Image144"
+    ],
+    [
+      "chaksu_Bosch_train_Image109",
+      "chaksu_Bosch_train_Image145"
+    ],
+    [
+      "chaksu_Bosch_train_Image156",
+      "chaksu_Bosch_train_Image157"
+    ],
+    [
+      "chaksu_Bosch_train_Image168",
+      "chaksu_Bosch_train_Image169"
+    ],
+    [
+      "chaksu_Bosch_test_P16_Image1",
+      "chaksu_Bosch_test_P29_Image2"
+    ]
+  ],
+  "expert_features_for_oracle_only": true,
+  "images": 1833,
+  "invalid_reference_geometry": 33,
+  "near_duplicate_candidates": 50333,
+  "numpy": "2.3.4",
+  "python": "3.12.2",
+  "raw_files_modified": false,
+  "script_sha256": "4df8c0666bac5f31520c120c5d6dd1c5d820eef49cdc0f2e359af8e81b04922a",
+  "smoke_only": false,
+  "visual_review": "Pending human review"
+}

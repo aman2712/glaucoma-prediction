@@ -1,0 +1,59 @@
+{
+  "chaksu_patient_linkage": "Unknown. No patient identity inferred from filenames. Provide --patient-groups before splitting; without it, both the CHAKSU train/validation split and the CHAKSU in-domain test are only provisional (image-level, not patient-level).",
+  "chaksu_source_join": {
+    "test": {
+      "Bosch": {
+        "images": 41,
+        "label_rows": 145,
+        "label_rows_without_release_image": 104
+      },
+      "Forus": {
+        "images": 31,
+        "label_rows": 31,
+        "label_rows_without_release_image": 0
+      },
+      "Remidio": {
+        "images": 264,
+        "label_rows": 264,
+        "label_rows_without_release_image": 0
+      }
+    },
+    "train": {
+      "Bosch": {
+        "images": 104,
+        "label_rows": 145,
+        "label_rows_without_release_image": 41
+      },
+      "Forus": {
+        "images": 95,
+        "label_rows": 95,
+        "label_rows_without_release_image": 0
+      },
+      "Remidio": {
+        "images": 810,
+        "label_rows": 810,
+        "label_rows_without_release_image": 0
+      }
+    }
+  },
+  "counts": {
+    "chaksu_test/Bosch/label=GLAUCOMA SUSPECT": 1,
+    "chaksu_test/Bosch/label=NORMAL": 40,
+    "chaksu_test/Forus/label=GLAUCOMA SUSPECT": 2,
+    "chaksu_test/Forus/label=NORMAL": 29,
+    "chaksu_test/Remidio/label=GLAUCOMA SUSPECT": 48,
+    "chaksu_test/Remidio/label=NORMAL": 216,
+    "chaksu_train/Bosch/label=GLAUCOMA SUSPECT": 19,
+    "chaksu_train/Bosch/label=NORMAL": 85,
+    "chaksu_train/Forus/label=GLAUCOMA SUSPECT": 16,
+    "chaksu_train/Forus/label=NORMAL": 79,
+    "chaksu_train/Remidio/label=GLAUCOMA SUSPECT": 102,
+    "chaksu_train/Remidio/label=NORMAL": 708,
+    "papila/Topcon/label=0": 333,
+    "papila/Topcon/label=1": 87,
+    "papila/Topcon/label=2": 68
+  },
+  "images": 1833,
+  "papila_patients": 244,
+  "status": "Inventory only, image/mask geometry and duplication not yet audited."
+}

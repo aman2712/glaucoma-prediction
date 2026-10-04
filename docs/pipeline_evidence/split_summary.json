@@ -1,0 +1,50 @@
+{
+  "all_splits_sha256": "a06d4ee94448bee53cff0ad40624a7fba64b47d4e3d6619331ef931433d06e72",
+  "classification_counts": {
+    "external_test": 420,
+    "in_domain_test": 336,
+    "train": 807,
+    "validation": 202
+  },
+  "counts": {
+    "external_test/papila/Topcon/label=": 68,
+    "external_test/papila/Topcon/label=0": 333,
+    "external_test/papila/Topcon/label=1": 87,
+    "in_domain_test/chaksu/Bosch/label=0": 40,
+    "in_domain_test/chaksu/Bosch/label=1": 1,
+    "in_domain_test/chaksu/Forus/label=0": 29,
+    "in_domain_test/chaksu/Forus/label=1": 2,
+    "in_domain_test/chaksu/Remidio/label=0": 216,
+    "in_domain_test/chaksu/Remidio/label=1": 48,
+    "train/chaksu/Bosch/label=0": 68,
+    "train/chaksu/Bosch/label=1": 15,
+    "train/chaksu/Forus/label=0": 65,
+    "train/chaksu/Forus/label=1": 13,
+    "train/chaksu/Remidio/label=0": 565,
+    "train/chaksu/Remidio/label=1": 81,
+    "validation/chaksu/Bosch/label=0": 17,
+    "validation/chaksu/Bosch/label=1": 4,
+    "validation/chaksu/Forus/label=0": 14,
+    "validation/chaksu/Forus/label=1": 3,
+    "validation/chaksu/Remidio/label=0": 143,
+    "validation/chaksu/Remidio/label=1": 21
+  },
+  "duplicate_review_sha256": "6542c95f736455ab2765e104c4d542da056f0aa462b99a4240f72a68fcdab106",
+  "interpretation": "Known groups and reviewed duplicates held together. CHAKSU train-release is split into train/validation; CHAKSU test-release is held out untouched as an in-domain test; PAPILA is fully external. Unknown patient linkage prevents a strict patient-disjoint claim until resolved. Human quality review still required.",
+  "limitation_note": "Patient identity recovered from filename for CHAKSU Bosch test-release images only (P##_ImageN naming, ~41 images/patients). No patient identifier exists in the released data for CHAKSU Bosch train-release or for any Forus/Remidio images; these remain image-level, not patient-level, for this milestone.",
+  "manifest_sha256": "888c805a69297ddbf7753e06041a4636638ac39850e6009554454076b01827b9",
+  "near_duplicate_reviews_pending": 0,
+  "patient_mapping_sha256": "652cbd800f8cc8be6c41b5aeda945498cbec799fa3b6b1d3f1529ae3a8c5c3c3",
+  "quarantined_external_overlap": 0,
+  "quarantined_release_overlap": 0,
+  "seed": 2440,
+  "segmentation_counts": {
+    "external_test": 486,
+    "in_domain_test": 327,
+    "train": 787,
+    "validation": 200
+  },
+  "status": "PROVISIONAL",
+  "unknown_chaksu_patient_images": 1304,
+  "validation_fraction_target": 0.2
+}

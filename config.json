@@ -1,0 +1,13 @@
+{
+  "chaksu_train_root": "../Train",
+  "chaksu_test_root": "../Test",
+  "papila_root": "../PapilaDB-PAPILA-17f8fa7746adb20275b5b6a0d99dc9dfe3007e9f",
+  "chaksu_mask_reference": "STAPLE",
+  "papila_reference_expert": 1,
+  "classification_size": 224,
+  "segmentation_size": 512,
+  "validation_fraction": 0.2,
+  "seed": 2440,
+  "mask_threshold": 128,
+  "notes": "Implementation defaults. CHAKSU train release is split into train/validation for development. CHAKSU test release is held out untouched as a test set (same dataset/population, different from PAPILA). PAPILA remains fully external and untouched until the model and thresholds are frozen. Confirm mask reference and any preprocessing choice using CHAKSU train-release data only, never the CHAKSU test release or PAPILA."
+}

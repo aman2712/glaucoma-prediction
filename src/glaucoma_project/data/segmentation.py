@@ -59,8 +59,9 @@ class SegmentationDataset(Dataset):
 
 
 def make_loader(split: str, batch_size: int = 8, root: Path = PREPARED_ROOT,
-                num_workers: int = 0) -> DataLoader:
-    """Training split is shuffled and augmented; every other split is neither."""
-    training = split == "train"
+                num_workers: int = 0, training: bool | None = None) -> DataLoader:
+    """Shuffled and augmented when ``training`` (default: only for the train split)."""
+    if training is None:
+        training = split == "train"
     return DataLoader(SegmentationDataset(split, root, augment=training), batch_size=batch_size,
                       shuffle=training, num_workers=num_workers)

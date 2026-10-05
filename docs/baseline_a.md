@@ -76,7 +76,7 @@ If PAPILA suspect eyes count as glaucoma: AUC 0.658 (0.600-0.715); oracle 0.742.
 ## Why PAPILA failed (post-hoc)
 Found after seeing the test results; nothing was changed because of it.
 
-- **Cups are drawn differently.** The average expert vertical CDR is 0.36 on PAPILA and 0.55 on CHAKSU. PAPILA's glaucoma eyes (0.52) sit below CHAKSU's healthy average (0.53 versus 0.65 for CHAKSU glaucoma). A threshold learned on CHAKSU therefore calls most PAPILA glaucoma healthy.
+- **Cups are drawn differently.** The average expert vertical CDR is 0.36 on PAPILA and 0.55 on CHAKSU. PAPILA's glaucoma eyes average 0.52, about the same as CHAKSU's healthy eyes (0.53); CHAKSU's glaucoma eyes average 0.65. A threshold learned on CHAKSU therefore calls most PAPILA glaucoma healthy.
 - **The model draws CHAKSU-style cups.** On PAPILA its cups are about twice as large as the experts' (median 2.2x) and predicted vertical CDR averages 0.51 against 0.36.
 - **Some images get no outline.** No disc was found in 20 of 486 PAPILA images and no cup in 40.
 - **Images differ in scale.** PAPILA discs are about 1.8x larger in pixels than CHAKSU's.

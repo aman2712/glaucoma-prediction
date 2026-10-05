@@ -6,21 +6,24 @@ import pandas as pd
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import StratifiedGroupKFold, cross_val_score
+from sklearn.model_selection import StratifiedGroupKFold, cross_val_predict, cross_val_score
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 from glaucoma_project.evaluation.classification import evaluate, youden_threshold
 
+DEVELOPMENT_SPLITS = ("train", "validation")
+
 
 @dataclass
 class BaselineResult:
-    model: Pipeline
-    threshold: float
+    model: Pipeline            # fitted on all development images
+    threshold: float          # Youden's J on out-of-fold scores
     best_c: float
-    cv_auc: pd.Series       # mean cross-validated AUC on train, per C
-    validation: pd.DataFrame  # metrics with CIs on the validation split
-    validation_score: np.ndarray
+    cv_auc: pd.Series         # cross-validated AUC for each C
+    development: pd.DataFrame  # out-of-fold metrics with CIs
+    out_of_fold_score: np.ndarray
+    labels: pd.Series
 
 
 def make_model(c: float = 1.0) -> Pipeline:
@@ -33,43 +36,50 @@ def labelled(table: pd.DataFrame) -> pd.DataFrame:
     return table.dropna(subset=["binary_label"])
 
 
-def cross_validated_auc(model, train: pd.DataFrame, features: list[str], folds: int, seed: int) -> float:
-    """Mean AUC over stratified folds of the training split. Images of one group stay in one fold."""
+def development_data(measurements: pd.DataFrame, source: str) -> pd.DataFrame:
+    """Labelled train and validation images, measured from ``source`` ("predicted" or "expert") masks."""
+    data = measurements[(measurements.source == source) & measurements.split.isin(DEVELOPMENT_SPLITS)]
+    return labelled(data).reset_index(drop=True)
+
+
+def grouped_folds(data: pd.DataFrame, folds: int, seed: int) -> list:
+    """Stratified folds in which images of one duplicate group never straddle train and test."""
     cv = StratifiedGroupKFold(n_splits=folds, shuffle=True, random_state=seed)
-    splits = list(cv.split(train, train["binary_label"], train["group_id"]))
-    return cross_val_score(model, train[features], train["binary_label"], cv=splits, scoring="roc_auc").mean()
+    return list(cv.split(data, data["binary_label"], data["group_id"]))
 
 
-def select_c(train: pd.DataFrame, features: list[str], c_grid: list[float], folds: int, seed: int) -> pd.Series:
-    """Cross-validated AUC on the training split for each value of C."""
-    return pd.Series({c: cross_validated_auc(make_model(c), train, features, folds, seed) for c in c_grid})
+def cross_validated_auc(model, data: pd.DataFrame, features: list[str], folds: int, seed: int) -> float:
+    return cross_val_score(model, data[features], data["binary_label"], cv=grouped_folds(data, folds, seed),
+                           scoring="roc_auc").mean()
+
+
+def run_baseline(measurements: pd.DataFrame, source: str, config: dict) -> BaselineResult:
+    """Choose C by grouped cross-validation, the threshold from out-of-fold scores, then fit on everything.
+
+    All development images (train and validation) are used, because the validation split alone has
+    only 27 glaucoma cases. Test images are never touched here.
+    """
+    features, folds, seed = config["features"], config["cv_folds"], config["seed"]
+    data = development_data(measurements, source)
+    cv_auc = pd.Series({c: cross_validated_auc(make_model(c), data, features, folds, seed)
+                        for c in config["c_grid"]})
+    best_c = float(cv_auc.idxmax())
+    score = cross_val_predict(make_model(best_c), data[features], data["binary_label"],
+                              cv=grouped_folds(data, folds, seed), method="predict_proba")[:, 1]
+    threshold = youden_threshold(data["binary_label"].to_numpy(), score)
+    table = evaluate(data["binary_label"], score, threshold, config["n_bootstrap"], seed)
+    model = make_model(best_c).fit(data[features], data["binary_label"])
+    return BaselineResult(model, threshold, best_c, cv_auc, table, score, data["binary_label"])
 
 
 def ablation(measurements: pd.DataFrame, source: str, config: dict, best_c: float) -> pd.Series:
-    """Cross-validated train AUC of the baseline against variants (extra features, a non-linear model)."""
-    train = labelled(measurements[(measurements.source == source) & (measurements.split == "train")])
+    """Cross-validated AUC of the baseline against variants (extra features, a non-linear model)."""
+    data = development_data(measurements, source)
     ratios, with_areas = config["features"], config["features"] + ["disc_area", "cup_area"]
     folds, seed = config["cv_folds"], config["seed"]
     boosting = HistGradientBoostingClassifier(max_depth=3, learning_rate=0.05, max_iter=100, random_state=seed)
     return pd.Series({
-        "logistic regression (ratios)": cross_validated_auc(make_model(best_c), train, ratios, folds, seed),
-        "logistic regression (ratios + areas)": cross_validated_auc(make_model(best_c), train, with_areas, folds, seed),
-        "gradient boosting (ratios)": cross_validated_auc(boosting, train, ratios, folds, seed),
+        "logistic regression (ratios)": cross_validated_auc(make_model(best_c), data, ratios, folds, seed),
+        "logistic regression (ratios + areas)": cross_validated_auc(make_model(best_c), data, with_areas, folds, seed),
+        "gradient boosting (ratios)": cross_validated_auc(boosting, data, ratios, folds, seed),
     })
-
-
-def run_baseline(measurements: pd.DataFrame, source: str, config: dict) -> BaselineResult:
-    """Fit on train, choose C by cross-validation on train, choose the threshold on validation.
-
-    ``source`` is "predicted" or "expert": which masks the measurements came from.
-    """
-    features = config["features"]
-    data = labelled(measurements[measurements.source == source])
-    train, validation = data[data.split == "train"], data[data.split == "validation"]
-    cv_auc = select_c(train, features, config["c_grid"], config["cv_folds"], config["seed"])
-    best_c = float(cv_auc.idxmax())
-    model = make_model(best_c).fit(train[features], train["binary_label"])
-    score = model.predict_proba(validation[features])[:, 1]
-    threshold = youden_threshold(validation["binary_label"].to_numpy(), score)
-    table = evaluate(validation["binary_label"], score, threshold, config["n_bootstrap"], config["seed"])
-    return BaselineResult(model, threshold, best_c, cv_auc, table, score)

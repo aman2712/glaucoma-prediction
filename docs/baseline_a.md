@@ -15,18 +15,27 @@ Frozen by `script/prepare_data.py` (seed 2440); see `DATA_PREPROCESSING.md`.
 
 | Split | Role | Images (segmentation) |
 |---|---|---|
-| CHAKSU train | fit U-Net and classifier | 787 |
-| CHAKSU validation | tune, choose threshold | 200 |
+| CHAKSU train | fit U-Net; classifier development | 787 |
+| CHAKSU validation | pick U-Net epoch; classifier development | 200 |
 | CHAKSU test | in-domain test, used once | 327 |
 | PAPILA | external test, used once | 486 (418 labelled) |
 
 PAPILA "suspect" eyes are excluded from classification. PAPILA is never used for training or tuning.
 
 ## Evaluation protocol
-- The regularisation strength C is chosen by 5-fold cross-validation on the training split (duplicate groups kept in one fold), because validation has only 27 glaucoma cases. The decision threshold is chosen on validation.
-- The threshold is chosen once (Youden's J on validation) and applied unchanged to both test sets.
-- Test sets are evaluated once, after everything is frozen.
+- The U-Net is trained on train; the validation split picks its best epoch.
+- The classifier uses all development images (train and validation), because validation alone has only 27 glaucoma cases. The regularisation strength C is chosen by 5-fold cross-validation (duplicate groups kept in one fold). The decision threshold is Youden's J on the pooled out-of-fold scores. The final classifier is then fitted on all development images.
+- Everything is frozen and committed (`docs/frozen_baseline_a.json`: code version and file hashes) before any test image is touched.
+- The test sets are evaluated once, by `final_evaluation.py`, which refuses to run on a changed pipeline or to run twice.
 - 95% confidence intervals: bootstrap, 2,000 resamples, over images.
+
+## Reporting rules (fixed before the test)
+- CHAKSU test and PAPILA are reported separately and never pooled.
+- PAPILA "suspect" eyes are excluded from the main result. Counting them as glaucoma is reported only as a labelled sensitivity analysis.
+- Reference points on the same images: the oracle (expert masks) and vertical CDR alone with no model.
+- Segmentation quality (Dice, CDR agreement) is reported on both test sets.
+- Comparisons with the other baselines use per-image scores (`runs/final/scores.csv`) and a paired bootstrap of the AUC difference.
+- No setting is changed after the test results are seen.
 
 ## Metrics
 **Classification (primary: AUC)**

@@ -7,3 +7,5 @@ pandas==3.0.6
 scikit-learn==1.9.1
 matplotlib==3.11.2
 pytest==9.1.1
+pyyaml==6.0.3
+segmentation-models-pytorch==0.5.0

@@ -54,7 +54,38 @@ Plain accuracy is reported but not used for conclusions (always predicting "heal
 
 Comparisons with the other baselines use the same splits and a paired bootstrap of the AUC difference.
 
-## Limitations (to state in results)
+## Results
+Frozen pipeline, run once on each test set. 95% confidence intervals in brackets.
+
+| | CHAKSU test (327 images, 50 glaucoma) | PAPILA (418 images, 85 glaucoma) |
+|---|---|---|
+| **AUC, Baseline A** | **0.934** (0.884-0.972) | **0.718** (0.647-0.790) |
+| AUC, expert masks (oracle) | 0.984 (0.973-0.993) | 0.799 (0.738-0.856) |
+| AUC, vertical CDR alone, no model | 0.937 (0.895-0.970) | 0.722 (0.644-0.798) |
+| Sensitivity / specificity | 0.78 / 0.91 | 0.40 / 0.94 |
+| Sensitivity at 95% specificity | 0.74 | 0.40 |
+| AUPRC | 0.829 | 0.559 |
+| Dice, disc / cup | 0.976 / 0.916 | 0.836 / 0.472 |
+
+If PAPILA suspect eyes count as glaucoma: AUC 0.658 (0.600-0.715); oracle 0.742.
+
+- On the same population as training, vertical CDR alone predicts glaucoma well. The classifier adds nothing over it.
+- On a new camera and hospital, performance drops sharply, and the threshold set on CHAKSU misses most glaucoma.
+- Even perfect outlines only reach 0.80 on PAPILA, so segmentation errors are not the whole story.
+
+## Why PAPILA failed (post-hoc)
+Found after seeing the test results; nothing was changed because of it.
+
+- **Cups are drawn differently.** The average expert vertical CDR is 0.36 on PAPILA and 0.55 on CHAKSU. PAPILA's glaucoma eyes (0.52) sit below CHAKSU's healthy average (0.53 versus 0.65 for CHAKSU glaucoma). A threshold learned on CHAKSU therefore calls most PAPILA glaucoma healthy.
+- **The model draws CHAKSU-style cups.** On PAPILA its cups are about twice as large as the experts' (median 2.2x) and predicted vertical CDR averages 0.51 against 0.36.
+- **Some images get no outline.** No disc was found in 20 of 486 PAPILA images and no cup in 40.
+- **Images differ in scale.** PAPILA discs are about 1.8x larger in pixels than CHAKSU's.
+- **Labels mean different things.** CHAKSU's glaucoma label follows expert votes that track CDR closely. PAPILA's is a clinical diagnosis.
+
+## Limitations
 - Splits are provisional: 1,304 CHAKSU images lack patient IDs, so patient overlap across splits cannot be excluded.
-- Some groups have very few glaucoma cases (CHAKSU Bosch test: 1; Forus test: 2), so no per-camera claims.
-- Glaucoma prevalence differs between CHAKSU and PAPILA, which affects precision-style metrics.
+- CHAKSU glaucoma labels follow cup-to-disc ratio closely, so CHAKSU results are optimistic for a CDR-based method.
+- The segmentation model saw only CHAKSU cameras, and PAPILA outlines follow a different convention.
+- Training-set measurements come from images the segmentation model learned from, so they are slightly cleaner than on new images.
+- Few glaucoma cases in some groups (CHAKSU Bosch test: 1; Forus test: 2), so no per-camera claims.
+- Glaucoma prevalence differs between CHAKSU (13%) and PAPILA (20%), which affects precision-style metrics.

@@ -5,7 +5,7 @@ from glaucoma_project.data import make_loader
 from glaucoma_project.measurements.cdr import measure
 from glaucoma_project.segmentation.predict import predict_masks
 
-COLUMNS = ["image_id", "dataset", "camera", "binary_label"]
+COLUMNS = ["image_id", "dataset", "camera", "binary_label", "group_id"]
 
 
 def measure_split(split: str, source: str, model=None, batch_size: int = 8) -> pd.DataFrame:

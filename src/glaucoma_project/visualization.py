@@ -66,3 +66,18 @@ def show_comparison(dataset, predicted, indices, scores):
         predicted_ax.axis("off")
     fig.tight_layout()
     return fig
+
+
+def plot_roc(curves: dict):
+    """ROC curves from {name: (labels, scores)}."""
+    from sklearn.metrics import roc_curve
+
+    fig, ax = plt.subplots(figsize=(4.5, 4.5))
+    for name, (y, score) in curves.items():
+        fpr, tpr, _ = roc_curve(y, score)
+        ax.plot(fpr, tpr, label=name)
+    ax.plot([0, 1], [0, 1], "k--", lw=1)
+    ax.set(xlabel="1 - specificity", ylabel="sensitivity", title="ROC (validation)")
+    ax.legend(loc="lower right")
+    fig.tight_layout()
+    return fig

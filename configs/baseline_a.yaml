@@ -1,0 +1,5 @@
+features: [vcdr, hcdr, area_cdr]
+c_grid: [0.001, 0.01, 0.1, 1, 10, 100]
+cv_folds: 5
+n_bootstrap: 2000
+seed: 2440

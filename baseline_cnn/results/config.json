@@ -1,0 +1,13 @@
+{
+  "model_name": "resnet18",
+  "seed": 2440,
+  "batch_size": 16,
+  "epochs": 25,
+  "warmup_epochs": 2,
+  "patience": 6,
+  "head_lr": 0.0001,
+  "backbone_lr": 1e-05,
+  "weight_decay": 0.0001,
+  "augment": true,
+  "target_sensitivity": 0.9
+}

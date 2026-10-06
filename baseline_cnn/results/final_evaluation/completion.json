@@ -1,0 +1,15 @@
+{
+  "protocol": {
+    "checkpoint_sha256": "ec4d00877fbcfba3b798cd21c2b21078a7ec1b3b7834c22540187a7ec75387f9",
+    "effective_manifest_sha256": "1937faba915cc4f18088943e135808b51a230dc7527dcbd78d46db0679a5a571",
+    "threshold": 0.0078666182234883,
+    "threshold_source": "CHAKSU validation only",
+    "target_validation_sensitivity": 0.9,
+    "model_name": "resnet18",
+    "weights": "ResNet18_Weights.IMAGENET1K_V1",
+    "best_epoch": 8,
+    "label_definition": "CHAKSU normal vs glaucoma suspect; PAPILA healthy vs clinical glaucoma",
+    "probability_note": "Uncalibrated sigmoid score; not a validated clinical disease probability"
+  },
+  "complete": true
+}

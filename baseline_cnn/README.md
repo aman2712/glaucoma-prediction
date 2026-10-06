@@ -174,6 +174,24 @@ The recorded run emitted CuBLAS nondeterminism warnings despite a fixed seed. Th
 
 ## Results and interpretation
 
+### Validation and test summary with saved uncertainty intervals
+
+Entries are point estimates (95% confidence intervals where saved). All sensitivity, specificity, and balanced-accuracy values use the frozen validation-selected threshold, 0.0078666182234883.
+
+| Metric | CHAKSU validation | CHAKSU held-out test | PAPILA external test |
+|---|---:|---:|---:|
+| Images / positives | 200 / 28 | 335 / 51 | 420 / 87 |
+| AUROC | 0.839 | 0.792 (0.722–0.851) | 0.736 (0.664–0.804) |
+| Average precision | 0.487 | 0.408 (0.291–0.539) | 0.435 (0.313–0.564) |
+| Sensitivity | 92.86% | 86.27% (75.68–95.12%) | 59.77% (47.62–71.11%) |
+| Specificity | 54.65% | 55.63% (48.95–61.86%) | 75.68% (70.32–80.81%) |
+| Balanced accuracy | 73.75% | 70.95% (64.68–76.35%) | 67.72% (61.47–74.07%) |
+| Brier score | 0.103 | 0.123 (0.094–0.153) | 0.194 (0.144–0.245) |
+
+Sources: [validation metrics](results/validation_metrics.csv), [CHAKSU test intervals](results/final_evaluation/in_domain_test_confidence_intervals.csv), and [PAPILA test intervals](results/final_evaluation/external_test_confidence_intervals.csv). Validation intervals were not saved and are not invented here. Validation estimates were used for model/threshold selection and are not independent test results.
+
+The test intervals are percentile intervals from 1,000 valid grouped bootstrap resamples: 314 CHAKSU analysis groups and 210 PAPILA patient groups. They preserve known within-group dependence but cannot correct unknown CHAKSU patient linkage. They describe sampling uncertainty conditional on this checkpoint and threshold, not variability from retraining. These intervals alone are not a paired significance test of the difference between datasets or methods.
+
 On 200 CHAKSU validation images (28 positives), the epoch-8 checkpoint achieved **AUROC 0.8389** and **average precision 0.4874**. Average precision is reported as AP, not trapezoidal PR-AUC. The positive prevalence was 0.14.
 
 | Metric | Default threshold 0.5 | Validation-selected threshold 0.0078666 |
@@ -203,6 +221,16 @@ The threshold and checkpoint were chosen on these validation data. Their reporte
 Training loss continued falling while validation loss worsened, showing clear late-training overfitting. Epoch 5 minimized validation BCE, while epoch 8 maximized validation AUROC. This is not a contradiction: BCE evaluates probability quality while AUROC evaluates ranking. Restoring epoch 8 followed the predefined model-selection rule and avoided reporting the final, more overfit model.
 
 ![Learning curves](results/learning_curves.png)
+
+**Figure 1.** Training and validation trajectories for the recorded run. Validation BCE reaches its minimum at epoch 5 while validation AUROC peaks at epoch 8. Continued reduction in training BCE without corresponding validation improvement indicates overfitting. Checkpoint selection followed AUROC, not the final training epoch.
+
+### Qualitative error panel (local course-report supplement)
+
+The existing saved validation error gallery is provided locally in `private_report/qualitative_panel.png`, with a report-ready caption in `private_report/README.md`. It contains the two validation false negatives and three high-scoring false positives at the frozen threshold. This is an illustrative, error-selected panel, not a random sample or a visual estimate of error frequency.
+
+Visible differences include field-of-view shape, illumination, colour, and image scale. These observations suggest questions for expert review; they do not prove that any feature caused a prediction. No saliency method or clinical adjudication was performed. The labels refer to CHAKSU expert-majority suspicion, not confirmed clinical diagnosis.
+
+This image supplement is intentionally Git-ignored because it contains dataset fundus photographs, embedded image markings, and identifiers. Include it only in an authorized course submission after checking image-sharing permissions and identifiers. The public repository retains the caption/interpretation but not the patient-image panel.
 
 ### Calibration
 
@@ -260,6 +288,17 @@ To perform inference, run the same command without `--check-only` inside a Slurm
 
 ## Limitations and next steps
 
+### Evidence required before stronger clinical claims
+
+- **Incomplete patient linkage:** known identities and duplicates are grouped, but unidentified repeat CHAKSU patients could cross partitions. Verified patient-disjoint data are needed for stronger independence claims.
+- **Label shift:** CHAKSU expert-majority glaucoma suspicion differs from PAPILA clinical labels. A harmonized reference standard and adjudication are needed; results do not establish diagnosis of confirmed glaucoma from photographs alone.
+- **Small subgroups:** camera-specific positive counts are small (validation Bosch 4, Forus 3). Larger, representative subgroup samples are needed before claiming robust camera or demographic performance.
+- **Single-run uncertainty:** one seed and one selected model were evaluated. Grouped test intervals do not measure training variability; the original run also emitted CuBLAS nondeterminism warnings.
+- **External sensitivity loss:** the fixed threshold detected 44/51 CHAKSU test positives but only 52/87 PAPILA positives, missing 35 external positives. The 90% validation target did not transfer. Raw scores are uncalibrated and predictive values depend on prevalence.
+- **No prospective clinical/workflow validation:** no prospective screening study, clinician-reader study, referral-workload assessment, or patient-outcome evaluation was performed. Retrospective ranking performance does not establish safety, utility, or readiness for deployment.
+
+Preserve this completed baseline; do not optimize it against the now-observed test outcomes.
+
 1. Preserve this run as the initial image-only baseline; improvements are separate experiments on identical effective splits.
 2. Run controlled regularization or partial-fine-tuning comparisons and repeated seeds using development data only.
 3. The baseline tests are now complete. Do not tune on their outcomes or treat test-informed changes as independent confirmation. Freeze future methods and thresholds using development data only, and disclose test reuse.
@@ -267,6 +306,28 @@ To perform inference, run the same command without `--check-only` inside a Slurm
 5. Report patient-linkage uncertainty, label-definition differences, small camera subgroups, and single-seed uncertainty. No confidence intervals are included in these validation exports.
 
 ## Sharing and provenance
+
+### Reproduction evidence and fixed configuration
+
+| Evidence | Recorded artifact / status |
+|---|---|
+| Training implementation and settings | Source notebook, `baseline_core.py`, [config.json](results/config.json) |
+| Recorded runtime | [environment.json](results/environment.json): Python 3.12.3, torch 2.9.1+cu126, torchvision 0.24.1+cu126; GPU execution |
+| Training execution | Slurm job 219631; saved executed notebook has 15 executed code cells and no saved execution errors; [history.csv](results/history.csv) contains 14 epochs |
+| Model selection | Epoch 8 selected by validation AUROC; seed 2440; no test-based checkpoint selection |
+| Test execution | Slurm job 219927; [completion.json](results/final_evaluation/completion.json) records completion for the frozen protocol |
+| Exact model and split identity | SHA-256 values in [frozen_protocol.json](results/frozen_protocol.json); local checkpoint and effective-manifest hashes matched during audit |
+| Fixed decision threshold | 0.0078666182234883, selected only on CHAKSU validation |
+| Local implementation check, 2026-10-06 | `python -m unittest test_baseline.py`: 20 tests passed in 2.690 seconds; Python 3.13.5, torch 2.9.1, torchvision 0.24.1 in an existing local environment. This was not fresh-environment training or test-set inference. |
+| Independent clean-environment rerun | **Not evidenced by the supplied files.** An isolated HPC virtual environment was used, but a second clean-checkout reproduction is not documented. |
+
+The training/evaluation logs, executed notebook, checkpoint, and full effective manifests are retained in the local/HPC run archive, not published with image-level data. An authorized reproducer needs access to that archive or the original prepared export; the aggregate public CSVs alone cannot reproduce checkpoint-only evaluation.
+
+The recorded run predates its packaging commits: initial baseline packaging `8324bf0` and test-result packaging `0f74810`. These identify the submitted code/results history, not a proven Git commit recorded at training time.
+
+For a clean reproduction, check out the submitted commit into a new directory, create a new environment, record `python --version` and `python -m pip freeze`, verify the original manifest hashes, and run `python -m unittest test_baseline.py`. Train with the unchanged saved configuration into a new run directory and compare validation trajectories without selecting changes from test results. Archive commands, exit status, logs, hardware/driver information, and resulting hashes. A successful unit-test run is not itself a training reproduction.
+
+Core numerical dependencies are pinned in `requirements.txt`; notebook tooling includes version ranges and nbconvert is installed separately. Therefore the requirements file is not a complete environment lock. Record the resolved package list for future reproduction. The original CuBLAS warning and the different determinism setting in the current Slurm example mean bit-for-bit retraining equivalence is not claimed.
 
 Do not commit `.venv/`, raw/prepared images, the checkpoint, image-level metadata, or notebooks/plots containing fundus images without appropriate sharing approval. Keep the exact checkpoint, effective manifests, original inputs, logs, and executed notebook in approved team storage. The checkpoint is approximately 44.8 MB and is necessary for subsequent evaluation of this exact model.
 

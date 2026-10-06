@@ -1,0 +1,5 @@
+partition,total,negatives,positives,positive_fraction
+train,808,699,109,0.1349009900990099
+validation,200,172,28,0.14
+in_domain_test,335,284,51,0.15223880597014924
+external_test,420,333,87,0.20714285714285716

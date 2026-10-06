@@ -6,10 +6,11 @@ This is Baseline 2 for the anatomy-informed glaucoma prescreening capstone: an I
 
 ## Current status
 
-The recorded HPC run completed successfully. Training and validation are complete; held-out CHAKSU and external PAPILA tests have **not** been evaluated. All reported performance below is from model-selection validation data.
+Training, validation, and held-out evaluation completed successfully. Validation results below are model-selection results; the separately labelled CHAKSU and PAPILA test results used the existing epoch-8 checkpoint and unchanged validation-selected threshold, without retraining.
 
 - Run: `20261006T074808Z_resnet18_6051f432`
 - Slurm job: `219631`
+- Evaluation Slurm job: `219927`; completion confirmed for both test sets.
 - Selected checkpoint: epoch 8; early stopping occurred at epoch 14.
 - Hardware: NVIDIA RTX 5000 Ada Generation; Python 3.12.3; PyTorch 2.9.1+cu126; torchvision 0.24.1+cu126.
 
@@ -22,6 +23,7 @@ baseline_cnn/
   baseline_core.py
   requirements.txt
   test_baseline.py
+  evaluate_saved_baseline.py
   results/
     config.json
     environment.json
@@ -31,6 +33,8 @@ baseline_cnn/
     learning_curves.png
     validation_curves.png
     effective_split_counts.csv
+    frozen_protocol.json
+    final_evaluation/  # aggregate test metrics, confidence intervals, curves and completion record
 ```
 
 The notebook embeds its helpers and is self-contained. `baseline_core.py` provides the corresponding helpers for testing. The published notebook has no saved outputs. Dataset images, image-level predictions and split manifests, the executed notebook, and `best.pt` are retained separately in approved team storage. Aggregate results alone are not sufficient to rerun the experiment: obtain the matching prepared data and manifests from the team.
@@ -218,11 +222,47 @@ All camera-specific threshold metrics use the same overall validation-selected t
 
 Forus performance suggests a potential robustness weakness. Bosch and Forus have too few positives for strong conclusions, and these differences do not establish a causal camera effect. Remidio dominates the validation sample.
 
+## Held-out test evaluation
+
+Evaluation job `219927` loaded the saved epoch-8 checkpoint without retraining. The threshold remained 0.0078666182234883, selected exclusively on CHAKSU validation data.
+
+| Metric | CHAKSU held-out | PAPILA external |
+|---|---:|---:|
+| Images / positive labels | 335 / 51 | 420 / 87 |
+| AUROC | 0.7921 | 0.7362 |
+| Average precision | 0.4078 | 0.4348 |
+| Sensitivity | 86.27% | 59.77% |
+| Specificity | 55.63% | 75.68% |
+| Balanced accuracy | 70.95% | 67.72% |
+| Precision | 25.88% | 39.10% |
+| True positives / false negatives | 44 / 7 | 52 / 35 |
+| True negatives / false positives | 158 / 126 | 252 / 81 |
+| Brier score | 0.1230 | 0.1939 |
+| Log loss | 0.4778 | 0.9431 |
+
+Ranking performance decreased from validation AUROC 0.8389 to 0.7921 on held-out CHAKSU and 0.7362 on PAPILA. The validation sensitivity target did not transfer to either test set. PAPILA sensitivity was substantially lower, despite higher specificity. Differences in dataset, prevalence, and label definitions prevent attributing this solely to camera shift. AP should not be compared across datasets without considering prevalence.
+
+At the default threshold 0.5, PAPILA had no positive predictions (sensitivity 0%, specificity 100%). Its undefined precision is represented as a missing value; this is not an execution failure. Do not retune the threshold using these test outcomes.
+
+The test confidence-interval CSVs contain 95% percentile intervals from 1,000 analysis-group bootstrap resamples. They condition on this trained model and fixed threshold, not training-seed variation. Known PAPILA patient groups preserve bilateral-eye dependence; unknown CHAKSU identities remain a limitation.
+
+### Evaluation-only execution
+
+The script expects the original run directory, including `best.pt`, `config.json`, `input_audit.json`, validation metrics/predictions, and `effective_splits/all.csv`, plus the prepared images. On HPC, check the saved protocol first:
+
+```bash
+python evaluate_saved_baseline.py \
+  --run-dir cnn_baseline_runs/20261006T074808Z_resnet18_6051f432 \
+  --artifacts-dir artifacts --check-only
+```
+
+To perform inference, run the same command without `--check-only` inside a Slurm GPU allocation, using the environment setup above. The script is specific to this recorded epoch-8 baseline and threshold. It refuses to overwrite an existing `final_evaluation/` directory, including in check-only mode. This run has already completed: inspect its saved outputs instead of submitting it again. `completion.json` records successful completion. Published aggregate results are in `results/final_evaluation/`, with the frozen protocol in `results/frozen_protocol.json`.
+
 ## Limitations and next steps
 
 1. Preserve this run as the initial image-only baseline; improvements are separate experiments on identical effective splits.
 2. Run controlled regularization or partial-fine-tuning comparisons and repeated seeds using development data only.
-3. Freeze each method and its threshold before held-out CHAKSU and PAPILA evaluation. Do not tune on test outcomes.
+3. The baseline tests are now complete. Do not tune on their outcomes or treat test-informed changes as independent confirmation. Freeze future methods and thresholds using development data only, and disclose test reuse.
 4. For evaluation of this exact saved baseline, load its existing `best.pt`, recorded configuration, effective manifests, and validation threshold. Running the entire training notebook again creates a different run and is not checkpoint-only evaluation.
 5. Report patient-linkage uncertainty, label-definition differences, small camera subgroups, and single-seed uncertainty. No confidence intervals are included in these validation exports.
 

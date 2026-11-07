@@ -1,0 +1,5 @@
+image_id,original_split,split,split_change_reason
+chaksu_Bosch_train_P10_Image1,train,quarantine_possible_patient_overlap,possible Bosch filename identity spans releases
+chaksu_Bosch_train_P5_Image2,validation,train,possible filename identity crosses development split; keep together in train
+chaksu_Bosch_train_P9_Image1,validation,train,possible filename identity crosses development split; keep together in train
+chaksu_Bosch_test_P10_Image2,in_domain_test,quarantine_possible_patient_overlap,possible Bosch filename identity spans releases

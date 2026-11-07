@@ -1,0 +1,24 @@
+{
+  "source_all_csv_sha256": "e98a51c8438242fb8fb8809e96ef0fa722004d39591e48a9948efa062aca58fc",
+  "all_csv_sha256": "4590df4ee6e6ce8ed722786cdb49220b632468184222fb9760c396e5cbf37094",
+  "images": 1833,
+  "counts": {
+    "train": {
+      "classification": 808,
+      "segmentation": 787
+    },
+    "validation": {
+      "classification": 200,
+      "segmentation": 199
+    },
+    "in_domain_test": {
+      "classification": 335,
+      "segmentation": 326
+    },
+    "external_test": {
+      "classification": 420,
+      "segmentation": 486
+    }
+  },
+  "moved_images": 4
+}

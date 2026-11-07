@@ -43,9 +43,10 @@ def development_data(measurements: pd.DataFrame, source: str) -> pd.DataFrame:
 
 
 def grouped_folds(data: pd.DataFrame, folds: int, seed: int) -> list:
-    """Stratified folds in which images of one duplicate group never straddle train and test."""
+    """Stratified folds in which images of one analysis group (same patient, duplicate or possible
+    patient, see data/effective_splits.py) never straddle train and test."""
     cv = StratifiedGroupKFold(n_splits=folds, shuffle=True, random_state=seed)
-    return list(cv.split(data, data["binary_label"], data["group_id"]))
+    return list(cv.split(data, data["binary_label"], data["analysis_group"]))
 
 
 def cross_validated_auc(model, data: pd.DataFrame, features: list[str], folds: int, seed: int) -> float:

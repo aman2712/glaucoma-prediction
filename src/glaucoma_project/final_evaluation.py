@@ -1,4 +1,6 @@
 """One-shot evaluation of the frozen Baseline A pipeline on the CHAKSU test set and PAPILA."""
+from pathlib import Path
+
 import joblib
 import numpy as np
 import pandas as pd
@@ -14,7 +16,6 @@ from glaucoma_project.measurements.extract import measure_split
 from glaucoma_project.runtime import pick_device
 from glaucoma_project.segmentation.predict import load_model, predict_dataset
 
-OUT_DIR = REPO_ROOT / "runs" / "final"
 TEST_SPLITS = ("in_domain_test", "external_test")
 SOURCES = ("predicted", "expert")
 
@@ -60,20 +61,21 @@ def _segmentation(model, measurements):
     return pd.DataFrame(rows)
 
 
-def run_final_evaluation(config: dict) -> dict:
-    """Verify the frozen pipeline, then evaluate it once. Refuses to run twice."""
-    if (OUT_DIR / "classification.csv").exists():
+def run_final_evaluation(config: dict, manifest: Path, out_dir: Path) -> dict:
+    """Verify the pipeline frozen in ``manifest``, then evaluate it once into ``out_dir``.
+    Refuses to run twice."""
+    if (out_dir / "classification.csv").exists():
         raise FileExistsError("The final evaluation has already been run")
-    frozen = verify()
+    frozen = verify(manifest)
     path = lambda name: REPO_ROOT / frozen["files"][name]["path"]
     model = load_model(path("segmentation_weights").parent, device=pick_device())
     classifiers = {source: joblib.load(path(f"classifier_{source}")) for source in SOURCES}
     measurements = pd.concat([measure_split(split, source, model) for split in TEST_SPLITS for source in SOURCES])
     classification, scores = _classification(measurements, classifiers, config)
     segmentation = _segmentation(model, measurements)
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    measurements.to_csv(OUT_DIR / "measurements_test.csv", index=False)
-    scores.to_csv(OUT_DIR / "scores.csv", index=False)
-    segmentation.to_csv(OUT_DIR / "segmentation.csv", index=False)
-    classification.to_csv(OUT_DIR / "classification.csv", index=False)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    measurements.to_csv(out_dir / "measurements_test.csv", index=False)
+    scores.to_csv(out_dir / "scores.csv", index=False)
+    segmentation.to_csv(out_dir / "segmentation.csv", index=False)
+    classification.to_csv(out_dir / "classification.csv", index=False)
     return {"classification": classification, "segmentation": segmentation}

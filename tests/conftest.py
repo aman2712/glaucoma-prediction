@@ -34,6 +34,7 @@ def build_export(root: Path) -> pd.DataFrame:
                 "patient_id_verified": "1" if dataset == "papila" else "0",
                 "pixel_sha256": hashlib.sha256(pixels.tobytes()).hexdigest(),
                 "group_id": papila_patient or image_id, "split": split, "classification_eligible": "1",
+                "segmentation_eligible": "1" if i % 4 else "0",
                 "binary_label": str(label),
                 "original_label": str(label) if dataset == "papila" else ("GLAUCOMA SUSPECT" if label else "NORMAL"),
                 "classification_image": relative})

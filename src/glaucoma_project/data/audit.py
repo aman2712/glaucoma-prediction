@@ -14,7 +14,7 @@ from glaucoma_project.freeze import sha256_file
 
 REQUIRED_COLUMNS = {
     "image_id", "dataset", "chaksu_release", "camera", "patient_id", "patient_id_verified",
-    "pixel_sha256", "group_id", "split", "classification_eligible", "binary_label",
+    "pixel_sha256", "group_id", "split", "classification_eligible", "segmentation_eligible", "binary_label",
     "original_label", "classification_image",
 }
 # The dataset and CHAKSU release each split must contain.

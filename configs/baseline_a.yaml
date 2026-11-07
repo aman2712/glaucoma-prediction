@@ -1,3 +1,4 @@
+run: common_split            # names this version's run folders and frozen record
 features: [vcdr, hcdr, area_cdr]
 c_grid: [0.001, 0.01, 0.1, 1, 10, 100]
 cv_folds: 5

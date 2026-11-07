@@ -1,0 +1,36 @@
+{
+  "git_commit": "55ff4b4adbc6f1b300996684c7e76227aaf6f9aa",
+  "files": {
+    "segmentation_weights": {
+      "path": "runs/segmentation/unet_resnet34_common_split/best.pt",
+      "sha256": "f29787b195aaf97010fc6ff1a68b4936880bdd4c00743d96f772ed50cf2c40d4"
+    },
+    "classifier_predicted": {
+      "path": "runs/classification/common_split/baseline_a_predicted.joblib",
+      "sha256": "cad011c24994e712bb5fea865bfbbbfc7e18ed4039d1ad35839770a66b445e88"
+    },
+    "classifier_expert": {
+      "path": "runs/classification/common_split/baseline_a_expert.joblib",
+      "sha256": "d11636cb08cf4633e85ee17f48a2b8e86cd7be3ae25fe8d7807282e38a01ea65"
+    },
+    "common_split": {
+      "path": "splits/all.csv",
+      "sha256": "4590df4ee6e6ce8ed722786cdb49220b632468184222fb9760c396e5cbf37094"
+    }
+  },
+  "settings": {
+    "features": [
+      "vcdr",
+      "hcdr",
+      "area_cdr"
+    ],
+    "thresholds": {
+      "predicted": 0.56803028374379,
+      "expert": 0.4301677164051345
+    },
+    "c": {
+      "predicted": 0.1,
+      "expert": 100.0
+    }
+  }
+}

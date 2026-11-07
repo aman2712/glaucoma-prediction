@@ -1,4 +1,5 @@
-"""Disc/cup segmentation data: reads the frozen split CSVs written by script/prepare_data.py."""
+"""Disc/cup segmentation data. Which images belong to which split comes from the common split
+of record (``splits/all.csv``); the images and masks come from the prepared data folder."""
 from pathlib import Path
 
 import numpy as np
@@ -7,7 +8,7 @@ import torch
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 
-from glaucoma_project import PREPARED_ROOT
+from glaucoma_project import COMMON_SPLIT_DIR, PREPARED_ROOT
 
 SPLITS = ("train", "validation", "in_domain_test", "external_test")
 
@@ -29,11 +30,13 @@ class SegmentationDataset(Dataset):
     flipped together and the image alone gets a brightness/contrast jitter.
     """
 
-    def __init__(self, split: str, root: Path = PREPARED_ROOT, augment: bool = False):
+    def __init__(self, split: str, root: Path = PREPARED_ROOT, augment: bool = False,
+                 splits_dir: Path = COMMON_SPLIT_DIR):
         if split not in SPLITS:
             raise ValueError(f"split must be one of {SPLITS}, got {split!r}")
-        table = pd.read_csv(Path(root) / "splits" / f"{split}_segmentation.csv")
-        self.table = table[table["segmentation_eligible"] == 1].reset_index(drop=True)
+        table = pd.read_csv(Path(splits_dir) / "all.csv")
+        eligible = (table["split"] == split) & (table["segmentation_eligible"] == 1)
+        self.table = table[eligible].reset_index(drop=True)
         self.root = Path(root)
         self.augment = augment
 
@@ -58,10 +61,10 @@ class SegmentationDataset(Dataset):
         return (image * contrast + brightness).clamp(0, 1), mask
 
 
-def make_loader(split: str, batch_size: int = 8, root: Path = PREPARED_ROOT,
-                num_workers: int = 0, training: bool | None = None) -> DataLoader:
+def make_loader(split: str, batch_size: int = 8, root: Path = PREPARED_ROOT, num_workers: int = 0,
+                training: bool | None = None, splits_dir: Path = COMMON_SPLIT_DIR) -> DataLoader:
     """Shuffled and augmented when ``training`` (default: only for the train split)."""
     if training is None:
         training = split == "train"
-    return DataLoader(SegmentationDataset(split, root, augment=training), batch_size=batch_size,
-                      shuffle=training, num_workers=num_workers)
+    dataset = SegmentationDataset(split, root, augment=training, splits_dir=splits_dir)
+    return DataLoader(dataset, batch_size=batch_size, shuffle=training, num_workers=num_workers)

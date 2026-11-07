@@ -37,7 +37,7 @@ def test_run_baseline_learns_a_separable_signal():
     for split, n in (("train", 200), ("validation", 100)):
         label = rng.integers(0, 2, n)
         rows.append(pd.DataFrame({"split": split, "source": "predicted", "binary_label": label,
-                                  "group_id": [f"{split}{i}" for i in range(n)],
+                                  "analysis_group": [f"{split}{i}" for i in range(n)],
                                   "vcdr": 0.5 + 0.2 * label + 0.05 * rng.normal(size=n)}))
     config = {"features": ["vcdr"], "c_grid": [0.1, 1], "cv_folds": 3, "n_bootstrap": 50, "seed": 0}
     result = run_baseline(pd.concat(rows), "predicted", config)

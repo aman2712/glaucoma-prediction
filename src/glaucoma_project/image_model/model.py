@@ -13,15 +13,34 @@ ARCHITECTURES = {
 UNTRAINED = "NONE_TEST_ONLY"
 
 
-def build_model(name: str, pretrained: bool = True) -> tuple[nn.Module, str]:
-    """The architecture with its last layer replaced by one logit. Also returns the weights ID
+class ResNetWithMeasurements(nn.Module):
+    """A ResNet whose pooled image features are joined to a few numbers (already scaled) before
+    the single-logit head. Called as ``model(images, measurements)``."""
+
+    def __init__(self, backbone: models.ResNet, n_measurements: int):
+        super().__init__()
+        self.head = nn.Linear(backbone.fc.in_features + n_measurements, 1)
+        backbone.fc = nn.Identity()
+        self.backbone = backbone
+
+    def forward(self, images: torch.Tensor, measurements: torch.Tensor) -> torch.Tensor:
+        return self.head(torch.cat([self.backbone(images), measurements], dim=1))
+
+
+def build_model(name: str, pretrained: bool = True, n_measurements: int = 0) -> tuple[nn.Module, str]:
+    """The architecture with its last layer replaced by one logit. With ``n_measurements`` > 0
+    (ResNets only) the head also receives that many measurements. Also returns the weights ID
     (``UNTRAINED`` without pretraining, which is for software tests only). A failed weight
     download raises: the model never silently falls back to random weights."""
     if name not in ARCHITECTURES:
         raise ValueError(f"Unknown architecture {name!r}; choose from {sorted(ARCHITECTURES)}")
     builder, weights = ARCHITECTURES[name]
     model = builder(weights=weights if pretrained else None)
-    if isinstance(model, models.ResNet):
+    if n_measurements:
+        if not isinstance(model, models.ResNet):
+            raise ValueError("Measurements can only be added to a ResNet")
+        model = ResNetWithMeasurements(model, n_measurements)
+    elif isinstance(model, models.ResNet):
         model.fc = nn.Linear(model.fc.in_features, 1)
     else:
         model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, 1)
@@ -30,13 +49,18 @@ def build_model(name: str, pretrained: bool = True) -> tuple[nn.Module, str]:
 
 def head_parameters(model: nn.Module) -> list[nn.Parameter]:
     """Parameters of the classification head; all others belong to the pretrained backbone."""
-    head = model.fc if isinstance(model, models.ResNet) else model.classifier
+    if isinstance(model, ResNetWithMeasurements):
+        head = model.head
+    else:
+        head = model.fc if isinstance(model, models.ResNet) else model.classifier
     return list(head.parameters())
 
 
 def restore_model(path: Path, device: torch.device) -> tuple[nn.Module, dict]:
     """Load a checkpoint written by ``train.fit`` into an evaluation-mode model."""
     checkpoint = torch.load(path, map_location="cpu", weights_only=True)
-    model, _ = build_model(checkpoint["config"]["model_name"], pretrained=False)
+    config = checkpoint["config"]
+    model, _ = build_model(config["model_name"], pretrained=False,
+                           n_measurements=len(config.get("measurement_columns", [])))
     model.load_state_dict(checkpoint["model_state"], strict=True)
     return model.to(device).eval(), checkpoint

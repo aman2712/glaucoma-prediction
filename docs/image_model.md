@@ -32,7 +32,7 @@ Before reading any image, `data/audit.py` checks that the export is complete and
 
 ## Evaluation protocol
 - Development (`image_model/develop`) reads only train and validation images.
-- `image_model/final` freezes the checkpoint, effective split and threshold (SHA-256 in `frozen_protocol.json`), checks them again, then evaluates CHAKSU test and PAPILA **once**. It refuses to run twice and refuses a changed checkpoint.
+- `image_model/final` freezes the checkpoint, common split and threshold (SHA-256 in `frozen_protocol.json`), checks them again, then evaluates CHAKSU test and PAPILA **once**. It refuses to run twice and refuses a changed checkpoint.
 - 95% confidence intervals come from 1,000 bootstrap resamples of whole patient groups (314 CHAKSU and 210 PAPILA groups). They describe sampling noise for this checkpoint and threshold, not variation from retraining, and cannot account for unrecorded patient overlap.
 - CHAKSU and PAPILA are reported separately and never pooled.
 - Saved evidence for the recorded run is in `docs/image_model_evidence/`.

@@ -65,5 +65,13 @@ def export(tmp_path):
 
 
 @pytest.fixture
+def common_split(export, tmp_path):
+    """The common split of the synthetic export, written to its own folder."""
+    from glaucoma_project.data.common_split import build_common_split
+    build_common_split(export[0], tmp_path / "common")
+    return tmp_path / "common"
+
+
+@pytest.fixture
 def rewrite_export():
     return write_export

@@ -35,8 +35,11 @@ def _improves(auroc: float, loss: float, best: tuple[float, float]) -> bool:
 
 
 def fit(train_rows: pd.DataFrame, val_rows: pd.DataFrame, root: Path, run_dir: Path, config: dict,
-        device: torch.device) -> tuple[torch.nn.Module, dict, pd.DataFrame]:
+        device: torch.device, measurement_scaler: dict | None = None) -> tuple[torch.nn.Module, dict, pd.DataFrame]:
     """Train and return the best fine-tuned model, its checkpoint dict and the epoch history.
+
+    With ``config["measurement_columns"]`` the rows must already hold the scaled measurements, and
+    ``measurement_scaler`` (saved in the checkpoint) records how they were scaled.
 
     The best epoch is chosen only among fine-tuning epochs, by validation AUROC. Writes
     ``history.csv`` after every epoch and ``best.pt`` whenever the best epoch improves, and
@@ -47,7 +50,8 @@ def fit(train_rows: pd.DataFrame, val_rows: pd.DataFrame, root: Path, run_dir: P
     if config["epochs"] <= config["warmup_epochs"]:
         raise ValueError("epochs must exceed warmup_epochs so that the backbone is fine-tuned")
     set_seed(config["seed"], deterministic=True)
-    model, weights = build_model(config["model_name"], config["pretrained"])
+    model, weights = build_model(config["model_name"], config["pretrained"],
+                                 n_measurements=len(config.get("measurement_columns", [])))
     model.to(device)
     train_loader = make_loader(train_rows, root, config, training=True)
     val_loader = make_loader(val_rows, root, config)
@@ -73,6 +77,7 @@ def fit(train_rows: pd.DataFrame, val_rows: pd.DataFrame, root: Path, run_dir: P
             best, bad_epochs = (auroc, val_loss), 0
             torch.save({"model_state": {k: v.cpu() for k, v in model.state_dict().items()},
                         "config": dict(config), "weights": weights, "best_epoch": epoch,
+                        "measurement_scaler": measurement_scaler,
                         "validation_auroc": auroc, "validation_bce": val_loss}, run_dir / "best.pt")
         else:
             bad_epochs += 1

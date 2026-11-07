@@ -16,7 +16,7 @@ import pandas as pd
 
 from glaucoma_project import COMMON_SPLIT_DIR, PREPARED_ROOT
 from glaucoma_project.data.audit import audit_export
-from glaucoma_project.data.effective_splits import effective_split
+from glaucoma_project.data.effective_splits import effective_split, partition_rows
 from glaucoma_project.data.segmentation import SPLITS
 from glaucoma_project.files import read_table, write_json
 from glaucoma_project.freeze import sha256_file
@@ -46,6 +46,12 @@ def build_common_split(root: Path = PREPARED_ROOT, directory: Path = COMMON_SPLI
                 "counts": _counts(effective), "moved_images": len(moved)}
     write_json(directory / "common_split.json", manifest)
     return manifest
+
+
+def load_common_split(directory: Path = COMMON_SPLIT_DIR) -> dict[str, pd.DataFrame]:
+    """The classification rows of each split, read from the committed ``all.csv`` (never recomputed)."""
+    table = read_table(Path(directory) / "all.csv")
+    return {name: partition_rows(table, name) for name in SPLITS}
 
 
 def check_common_split(root: Path = PREPARED_ROOT, directory: Path = COMMON_SPLIT_DIR) -> None:

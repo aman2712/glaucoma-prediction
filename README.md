@@ -13,20 +13,22 @@ Data: **CHAKSU** for development and in-domain testing, **PAPILA** as a fully ex
 |---|---|---|---|
 | Baseline A | measurements from predicted disc/cup masks | [`docs/baseline_a.md`](docs/baseline_a.md) | `segmentation/`, `measurements/`, `classification/` |
 | Baseline B | the photograph only | [`docs/image_model.md`](docs/image_model.md) | `image_model/` |
-| Combined | both | planned | |
+| Combined | both | design in [`docs/experiment_log.md`](docs/experiment_log.md) (P01) | `combined_model/`, `hpc/` |
 
 ## Layout
 
 ```
 data_pipeline/   data preparation: inventory, masks, frozen splits (own README)
 src/glaucoma_project/
-  data/          audit of the prepared export, effective split, datasets and loaders
+  data/          audit of the prepared export, common split, datasets and loaders
   segmentation/  disc/cup U-Net
   measurements/  masks -> cup-to-disc ratios
   classification/  logistic regression on measurements
-  image_model/   image-only CNN: train, freeze, final evaluation
+  image_model/   image-only CNN, optionally with measurements: train, freeze, final evaluation
+  combined_model/  P01: image-only vs combined, several seeds: freeze, score, analyse
   evaluation/    metrics, bootstrap, paired comparison
 configs/         settings of each model (YAML)
+hpc/             job scripts and notes for the university HPC lab
 tests/           unit tests (no patient data needed)
 notebooks/       one driver notebook per model, plus data exploration
 docs/            protocols, results, and saved evidence

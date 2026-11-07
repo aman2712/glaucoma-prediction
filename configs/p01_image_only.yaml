@@ -1,0 +1,15 @@
+# P01, image-only arm: the Baseline B recipe (configs/image_model.yaml), photograph only.
+run_name: p01_image_only
+model_name: resnet18
+pretrained: true
+seed: 2440                  # overridden per run by --seed
+batch_size: 16
+epochs: 25
+warmup_epochs: 2
+patience: 6
+head_lr: 0.0001
+backbone_lr: 0.00001
+weight_decay: 0.0001
+augment: true
+target_sensitivity: 0.9
+n_bootstrap: 1000

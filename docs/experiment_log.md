@@ -1,0 +1,33 @@
+# Experiment Log
+
+One row per experiment, audit or check. Rules:
+- Write the hypothesis **before** running. Add the outcome afterwards, and never edit a hypothesis after seeing results.
+- Every number traces to a saved file or a commit. Mark analyses done after seeing test results as **post-hoc**.
+- Test sets are used once per frozen model. A later change to a frozen model is a new experiment on a new run.
+
+Types: **experiment**, **audit** (checks the data or the pipeline), **post-hoc**, **verification** (software, no new results).
+
+## Completed
+
+| ID | Type | Date | Hypothesis | Configuration / evidence | Metric | Outcome | Next action |
+|---|---|---|---|---|---|---|---|
+| E01 | experiment | 2026-10-05 | A U-Net trained on CHAKSU train segments disc and cup well enough to measure them. | `configs/segmentation.yaml` (ResNet-34 encoder, ImageNet init, Dice+BCE, 40 epochs, batch 8, lr 3e-4, seed 2440); run `unet_resnet34`, commit 30f50e2 | Validation Dice, disc / cup | Best epoch 25: 0.975 / 0.919. Supported in-domain. | Measure all images (E02). |
+| E02 | experiment | 2026-10-05 | Logistic regression on three cup-to-disc ratios (vertical, horizontal, area) classifies glaucoma; the gap between predicted and expert masks shows what segmentation error costs. | `configs/baseline_a.yaml`; commit 61c22a0; trained on train, tuned on validation (27 positives) | Validation AUC, predicted / expert masks | 0.952 / 0.982. Supported; validation too small for a stable threshold. | Pool development data (E03). |
+| E03 | experiment | 2026-10-05 | Pooling train and validation, with C from grouped 5-fold CV and the threshold from out-of-fold scores, is more stable than using validation alone. | commit c6d3d1e; `docs/frozen_baseline_a.json` (C 0.1 / 100, thresholds 0.540 / 0.386) | Out-of-fold AUC, predicted / expert | 0.960 / 0.980. Adopted and frozen. | Audit before testing (E04). |
+| E04 | audit | 2026-10-05 | The pipeline has no bug or leak that would invalidate a test result. | Analyses run before testing: pooled grouped CV, leave-one-camera-out, label-vs-CDR check, image-similarity check. Figures are recorded here; no output file is committed. | AUC; vCDR vs votes; counts | No code bug. CHAKSU labels track expert vCDR monotonically (0 votes 0.50 to 5 votes 0.69), so CHAKSU is optimistic for a CDR method. Leave-one-camera-out AUC at least 0.956. 20 of 987 pipeline expert vCDR values off by more than 0.05 (stray pixels; ours use the largest component). No near-copies (similarity above 0.995). | Freeze and evaluate (E05). |
+| E05 | experiment | 2026-10-05 | The frozen Baseline A holds up on CHAKSU test and on PAPILA. | commit 0f92eef; frozen pipeline in `docs/frozen_baseline_a.json`; one-shot; results in `docs/baseline_a.md` | AUC, predicted / expert / vCDR alone | CHAKSU 0.934 / 0.984 / 0.937. PAPILA 0.718 / 0.799 / 0.722. Supported on CHAKSU; **not supported on PAPILA** (sensitivity 0.40). The classifier adds nothing over vCDR alone. | Diagnose PAPILA (E06). |
+| E06 | post-hoc | 2026-10-06 | PAPILA fails because of annotation convention and cup segmentation, not only classification. | commits 7cbea1d, b31a76a; `docs/baseline_a.md` | Mean expert vCDR; cup size ratio; missing outlines | Expert vCDR 0.36 (PAPILA) vs 0.55 (CHAKSU); predicted cups about 2.2x too large; no disc found in 20 and no cup in 40 of 486 images. Explains the drop; nothing was changed because of it. | Test one principled mitigation (P03). |
+| E07 | experiment | 2026-10-06 | A pretrained ResNet-18 that sees only the photograph ranks glaucoma usefully, and holds up less well on a new camera and hospital. | `docs/image_model_evidence/config.json` (frozen record there); run `20261006T074808Z_resnet18_6051f432`, Slurm jobs 219631 and 219927; commits 8324bf0, 0f74810 | AUROC; validation / CHAKSU test / PAPILA | 0.839 / 0.792 / 0.736 (epoch 8 of 14). Overfits after epoch 8; threshold's sensitivity did not transfer (PAPILA 0.60). | Common split (P00), then compare (P01). |
+| E08 | verification | 2026-11-07 | The ported image-only code reproduces the original exactly. | commit 22c1cb0; original code run side by side (CPU, fixed seeds) | Equality of audit, split, history, weights, predictions, tables, CIs | Identical on real data (audit and split) and on synthetic data (everything else). The real checkpoint was not re-evaluated. | None. |
+| E09 | experiment (parked) | 2026-11-07 | Baseline A and the image-only model differ in AUC on the same images. | Needed the teammate's per-image scores, which are not in the repository | Paired bootstrap AUC difference, A minus image-only | CHAKSU +0.142 (0.078 to 0.209, n=326); PAPILA -0.017 (-0.09 to 0.062, n=418). **Parked:** not reproducible from the repository and on mismatched splits. | Redo on the common split from reproducible scores (P01). |
+
+## Planned
+
+Hypotheses are fixed here before any run. Each needs the team's agreement on the common split (P00).
+
+| ID | Type | Hypothesis | Design | Metric and decision rule | Status |
+|---|---|---|---|---|---|
+| P00 | decision | One common split for all models makes the comparison fair. | Baseline A (pipeline split) and Baseline B (effective split) differ by 4 images. Pick one, re-freeze what changes. | Same image IDs and hashes for every model. | Open |
+| P01 | experiment | Adding predicted measurements to the image features improves glaucoma prediction over the image alone (the project question). | Image-only vs measurements-only vs combined (same frozen image features plus the three ratios, linear classifier), identical splits, frozen before testing. | Paired bootstrap AUC difference on CHAKSU test and PAPILA separately. Called an improvement only if the 95% interval excludes 0. CHAKSU gain alone is treated as possibly circular, because its labels follow CDR. | Proposed |
+| P02 | experiment | Segmentation error limits the combined model. | Combined model with predicted vs expert masks. | AUC gap on both test sets; the gap measures the cost of segmentation error. | Proposed |
+| P03 | experiment | One principled correction reduces the PAPILA drop without using PAPILA labels for tuning. | Choose one before looking (for example recalibrating the threshold, or stronger photometric augmentation of the segmentation model) using a CHAKSU-only development subset. | PAPILA AUC and sensitivity at the frozen rule, before vs after; reported even if it does not help. This is also the bonus mitigation. | Proposed |

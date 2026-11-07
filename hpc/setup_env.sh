@@ -5,6 +5,8 @@ set -euo pipefail
 source /apps/local/anaconda3/conda_init.sh
 conda create -y -n glaucoma python=3.12
 conda activate glaucoma
+# The lab's GPU driver supports CUDA 12.8, so take the matching PyTorch build (the default one needs 13).
+pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cu128
 pip install -r requirements.txt
 pip install -e .
 python - <<'PY'

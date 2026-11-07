@@ -17,7 +17,7 @@ All settings are in `configs/image_model.yaml`; the code is in `src/glaucoma_pro
 ## Data and splits
 The model uses the pipeline's frozen split (`DATA_PREPROCESSING.md` in `data_pipeline/`) with one extra precaution, the **effective split** (`data/effective_splits.py`). CHAKSU Bosch images named `P<number>_Image<n>` may show the same patient in different releases, which the pipeline cannot confirm. They are grouped by P-number and merged with the known groups. A group spanning releases is quarantined; a group spanning train and validation moves to train. The rule uses no image content and no model result.
 
-Compared with the pipeline split (Baseline A) this moves four images: two are quarantined and two validation images move to training.
+This is the common split of record (`splits/`), also used by Baseline A. Compared with the pipeline's own split it moves four images: two are quarantined and two validation images move to training.
 
 | Split | Dataset | Images | Negative | Positive |
 |---|---|---:|---:|---:|

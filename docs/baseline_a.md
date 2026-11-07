@@ -11,21 +11,21 @@ and does the classifier hold up on a different camera and hospital (PAPILA)?
 4. **Oracle** (reference only): the same classifier on measurements from expert masks. The gap to Baseline A is the cost of segmentation error.
 
 ## Data and splits
-Frozen by `data_pipeline/prepare_data.py` (seed 2440); see `data_pipeline/DATA_PREPROCESSING.md`.
+The common split of record (`splits/`, shared with the image-only baseline): the data pipeline's frozen split (`data_pipeline/prepare_data.py`, seed 2440, see `data_pipeline/DATA_PREPROCESSING.md`) plus a precautionary grouping of possible repeat patients. Compared with the pipeline split it moves four images: two are quarantined (one CHAKSU train, one CHAKSU test) and two validation images move to training.
 
 | Split | Role | Images (segmentation) |
 |---|---|---|
 | CHAKSU train | fit U-Net; classifier development | 787 |
-| CHAKSU validation | pick U-Net epoch; classifier development | 200 |
-| CHAKSU test | in-domain test, used once | 327 |
+| CHAKSU validation | pick U-Net epoch; classifier development | 199 |
+| CHAKSU test | in-domain test, used once | 326 |
 | PAPILA | external test, used once | 486 (418 labelled) |
 
 PAPILA "suspect" eyes are excluded from classification. PAPILA is never used for training or tuning.
 
 ## Evaluation protocol
 - The U-Net is trained on train; the validation split picks its best epoch.
-- The classifier uses all development images (train and validation), because validation alone has only 27 glaucoma cases. The regularisation strength C is chosen by 5-fold cross-validation (duplicate groups kept in one fold). The decision threshold is Youden's J on the pooled out-of-fold scores. The final classifier is then fitted on all development images.
-- Everything is frozen and committed (`docs/frozen_baseline_a.json`: code version and file hashes) before any test image is touched.
+- The classifier uses all development images (train and validation), because validation alone has only 27 glaucoma cases. The regularisation strength C is chosen by 5-fold cross-validation (images of one analysis group, meaning the same patient, a duplicate or a possible repeat patient, kept in one fold). The decision threshold is Youden's J on the pooled out-of-fold scores. The final classifier is then fitted on all development images.
+- Everything is frozen and committed (`docs/frozen_baseline_a_common_split.json`: code version and file hashes, including the split file) before any test image is touched.
 - The test sets are evaluated once, by `final_evaluation.py`, which refuses to run on a changed pipeline or to run twice.
 - 95% confidence intervals: bootstrap, 2,000 resamples, over images.
 
@@ -34,7 +34,7 @@ PAPILA "suspect" eyes are excluded from classification. PAPILA is never used for
 - PAPILA "suspect" eyes are excluded from the main result. Counting them as glaucoma is reported only as a labelled sensitivity analysis.
 - Reference points on the same images: the oracle (expert masks) and vertical CDR alone with no model.
 - Segmentation quality (Dice, CDR agreement) is reported on both test sets.
-- Comparisons with the other baselines use per-image scores (`runs/final/scores.csv`) and a paired bootstrap of the AUC difference.
+- Comparisons with the other baselines use per-image scores (`runs/final/common_split/scores.csv`) and a paired bootstrap of the AUC difference.
 - No setting is changed after the test results are seen.
 
 ## Metrics
@@ -55,30 +55,42 @@ Plain accuracy is reported but not used for conclusions (always predicting "heal
 Comparisons with the other baselines use the same splits and a paired bootstrap of the AUC difference.
 
 ## Results
-Frozen pipeline, run once on each test set. 95% confidence intervals in brackets.
+Numbers of record: the pipeline frozen on the common split (`docs/frozen_baseline_a_common_split.json`) and run once on each test set. 95% confidence intervals in brackets.
 
-| | CHAKSU test (327 images, 50 glaucoma) | PAPILA (418 images, 85 glaucoma) |
+| | CHAKSU test (326 images, 50 glaucoma) | PAPILA (418 images, 85 glaucoma) |
 |---|---|---|
-| **AUC, Baseline A** | **0.934** (0.884-0.972) | **0.718** (0.647-0.790) |
+| **AUC, Baseline A** | **0.943** (0.898-0.976) | **0.731** (0.663-0.791) |
 | AUC, expert masks (oracle) | 0.984 (0.973-0.993) | 0.799 (0.738-0.856) |
-| AUC, vertical CDR alone, no model | 0.937 (0.895-0.970) | 0.722 (0.644-0.798) |
-| Sensitivity / specificity | 0.78 / 0.91 | 0.40 / 0.94 |
-| Sensitivity at 95% specificity | 0.74 | 0.40 |
-| AUPRC | 0.829 | 0.559 |
-| Dice, disc / cup | 0.976 / 0.916 | 0.836 / 0.472 |
+| AUC, vertical CDR alone, no model | 0.948 (0.909-0.979) | 0.762 (0.694-0.824) |
+| Sensitivity / specificity | 0.80 / 0.92 | 0.59 / 0.78 |
+| Sensitivity at 95% specificity | 0.74 | 0.35 |
+| AUPRC | 0.838 | 0.524 |
+| Dice, disc / cup | 0.977 / 0.914 | 0.800 / 0.458 |
 
-If PAPILA suspect eyes count as glaucoma: AUC 0.658 (0.600-0.715); oracle 0.742.
+If PAPILA suspect eyes count as glaucoma: AUC 0.656 (0.600-0.708); oracle 0.742 (0.689-0.789).
 
 - On the same population as training, vertical CDR alone predicts glaucoma well. The classifier adds nothing over it.
-- On a new camera and hospital, performance drops sharply, and the threshold set on CHAKSU misses most glaucoma.
-- Even perfect outlines only reach 0.80 on PAPILA, so segmentation errors are not the whole story.
+- On a new camera and hospital, ranking performance drops sharply. Even perfect outlines only reach 0.80 on PAPILA, so segmentation errors are not the whole story.
+- The sensitivity and specificity on PAPILA depend on the particular trained segmentation network (see the earlier run below), so read the AUC, not the operating point.
+
+### Earlier run on the pipeline split
+The first version of this pipeline used the data pipeline's split without the precautionary grouping. The common split was adopted so that every model shares one split. The U-Net was retrained and the pipeline re-frozen and re-evaluated with **no setting changed** (the segmentation config differs only in its run name). The test sets had already been evaluated once, by the earlier version, so this is a re-evaluation, not a first look; both are reported (experiment log, E05 and E10).
+
+| | CHAKSU test (327 images) | PAPILA (418 images) |
+|---|---|---|
+| AUC, Baseline A | 0.934 (0.884-0.972) | 0.718 (0.647-0.790) |
+| AUC, expert masks (oracle) | 0.984 (0.973-0.993) | 0.799 (0.738-0.856) |
+| Sensitivity / specificity | 0.78 / 0.91 | 0.40 / 0.94 |
+| Dice, disc / cup | 0.976 / 0.916 | 0.836 / 0.472 |
+
+All AUCs of the two runs agree within the earlier intervals. The PAPILA sensitivity and specificity do not (0.40 / 0.94 earlier, 0.59 / 0.78 now), although the expert-mask results are identical. The cause is the retrained U-Net: on PAPILA it draws larger cups (mean predicted vertical CDR 0.51 earlier, 0.56 now) and finds no outline in more images (disc missing in 20 earlier, 36 now), while on CHAKSU test its predictions barely changed (0.552, 0.548). A threshold chosen on CHAKSU therefore sits at a different place in the PAPILA score distribution (13% of PAPILA scores above it earlier, 30% now). The ranking (AUC) is stable; the operating point is not.
 
 ## Why PAPILA failed (post-hoc)
 Found after seeing the test results; nothing was changed because of it.
 
-- **Cups are drawn differently.** The average expert vertical CDR is 0.36 on PAPILA and 0.55 on CHAKSU. PAPILA's glaucoma eyes average 0.52, about the same as CHAKSU's healthy eyes (0.53); CHAKSU's glaucoma eyes average 0.65. A threshold learned on CHAKSU therefore calls most PAPILA glaucoma healthy.
-- **The model draws CHAKSU-style cups.** On PAPILA its cups are about twice as large as the experts' (median 2.2x) and predicted vertical CDR averages 0.51 against 0.36.
-- **Some images get no outline.** No disc was found in 20 of 486 PAPILA images and no cup in 40.
+- **Cups are drawn differently.** The average expert vertical CDR is 0.36 on PAPILA and 0.55 on CHAKSU. PAPILA's glaucoma eyes average 0.52, about the same as CHAKSU's healthy eyes (0.53); CHAKSU's glaucoma eyes average 0.67. A threshold learned on CHAKSU therefore calls many PAPILA glaucoma eyes healthy.
+- **The model draws CHAKSU-style cups.** On PAPILA its cups are more than twice as large as the experts' (median 2.3x; 2.2x in the earlier run) and predicted vertical CDR averages 0.56 against 0.36.
+- **Some images get no outline.** No disc was found in 36 of 486 PAPILA images and no cup in 46 (20 and 40 in the earlier run).
 - **Images differ in scale.** PAPILA discs are about 1.8x larger in pixels than CHAKSU's.
 - **Labels mean different things.** CHAKSU's glaucoma label follows expert votes that track CDR closely. PAPILA's is a clinical diagnosis.
 
@@ -89,3 +101,4 @@ Found after seeing the test results; nothing was changed because of it.
 - Training-set measurements come from images the segmentation model learned from, so they are slightly cleaner than on new images.
 - Few glaucoma cases in some groups (CHAKSU Bosch test: 1; Forus test: 2), so no per-camera claims.
 - Glaucoma prevalence differs between CHAKSU (13%) and PAPILA (20%), which affects precision-style metrics.
+- One trained segmentation network per version. Retraining changed the PAPILA operating point a lot while leaving the AUC alone, so training variability is not covered by the confidence intervals (they only resample images).

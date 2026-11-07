@@ -35,23 +35,37 @@ docs/            protocols, results, and saved evidence
 runs/ data/      local only (git-ignored): outputs and datasets
 ```
 
-## Setup
+## Reproduce the main results
 
-```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt && pip install -e .
-```
+Needs Python 3.11 or newer. Step 2 needs the datasets, which are not in the repository.
 
-Prepare the data first (see [`data_pipeline/README.md`](data_pipeline/README.md)); the models read it from `runs/prep`.
+1. **Environment and tests** (about 90 tests, none needs patient data):
+   ```bash
+   python3 -m venv .venv && source .venv/bin/activate
+   pip install -r requirements.txt && pip install -e .
+   pytest
+   ```
+2. **Data.** Download CHAKSU and PAPILA and run the preparation steps in [`data_pipeline/README.md`](data_pipeline/README.md); the models read the result from `runs/prep`. Then check that your copy matches the split of record in `splits/`:
+   ```bash
+   python -m glaucoma_project.data.common_split --check
+   ```
+3. **Baseline A** (measurements only). Train the U-Net, then run `notebooks/03_baseline_a.ipynb`, which freezes the pipeline and evaluates the test sets once:
+   ```bash
+   python -m glaucoma_project.segmentation.train --config configs/segmentation.yaml
+   ```
+4. **Baseline B** (image only):
+   ```bash
+   python -m glaucoma_project.image_model.develop
+   python -m glaucoma_project.image_model.final --run-dir runs/image_model/resnet18   # freeze + one-shot test evaluation
+   ```
+5. **Combined study (P01)**: ratios for every image, 10 trainings (2 arms x 5 seeds), freeze, one-shot scoring, analysis. The commands, including the job script for the university GPU cluster, are in [`hpc/README.md`](hpc/README.md) and the design is in [`docs/experiment_log.md`](docs/experiment_log.md).
 
-## Run
+Every run writes its configuration, git commit and metrics to its own folder under `runs/`. Test sets are evaluated once, after the model and threshold are frozen; the code refuses a second evaluation.
 
-```bash
-python -m glaucoma_project.segmentation.train          # Baseline A: U-Net, then notebooks/03_baseline_a.ipynb
-python -m glaucoma_project.image_model.develop         # Baseline B: audit, train, validation report
-python -m glaucoma_project.image_model.final --run-dir runs/image_model/resnet18   # freeze + one-shot test evaluation
-pytest                                                  # all unit tests
-```
+| Result to compare | CHAKSU test AUC | PAPILA AUC | Where |
+|---|---:|---:|---|
+| Baseline A | 0.943 | 0.731 | [`docs/baseline_a.md`](docs/baseline_a.md) |
+| Baseline B | 0.792 | 0.736 | [`docs/image_model.md`](docs/image_model.md) |
+| Combined minus image-only | +0.003 | +0.006 | [`docs/combined_model.md`](docs/combined_model.md) |
 
-Every run writes its configuration, git commit and metrics to its own folder under `runs/`.
-Test sets are evaluated once, after the model and threshold are frozen.
+Retraining on other hardware gives slightly different numbers. On the cluster GPU the image-only baseline (seed 2440) reproduced a validation AUC of 0.838 against 0.839 on the first run.

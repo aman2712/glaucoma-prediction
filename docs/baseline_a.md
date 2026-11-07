@@ -85,6 +85,8 @@ The first version of this pipeline used the data pipeline's split without the pr
 
 All AUCs of the two runs agree within the earlier intervals. The PAPILA sensitivity and specificity do not (0.40 / 0.94 earlier, 0.59 / 0.78 now), although the expert-mask results are identical. The cause is the retrained U-Net: on PAPILA it draws larger cups (mean predicted vertical CDR 0.51 earlier, 0.56 now) and finds no outline in more images (disc missing in 20 earlier, 36 now), while on CHAKSU test its predictions barely changed (0.552, 0.548). A threshold chosen on CHAKSU therefore sits at a different place in the PAPILA score distribution (13% of PAPILA scores above it earlier, 30% now). The ranking (AUC) is stable; the operating point is not.
 
+**What the threshold is, and why the same number gives different results.** The classifier gives each eye a score between 0 and 1. The frozen threshold (0.568 for predicted masks) is a fixed cutoff: an eye scoring at or above it is called glaucoma, below it healthy. It was chosen on development data only (Youden's J, the cutoff that best balances sensitivity and specificity), and never re-tuned on test data. Sensitivity is the share of glaucoma eyes flagged; specificity is the share of healthy eyes cleared. The number 0.568 did not change between the two runs, but the two U-Nets give different scores to the same PAPILA eyes. The retrained one draws larger cups, so every ratio and score rises and more eyes (sick and healthy) cross the same cutoff: sensitivity rose from 0.40 to 0.59 and specificity fell from 0.94 to 0.78. AUC ignores the cutoff, so it barely moved. A threshold chosen on CHAKSU therefore does not transfer reliably to PAPILA, and the sensitivity and specificity on PAPILA should not be quoted without this caveat.
+
 ## Why PAPILA failed (post-hoc)
 Found after seeing the test results; nothing was changed because of it.
 
@@ -101,4 +103,4 @@ Found after seeing the test results; nothing was changed because of it.
 - Training-set measurements come from images the segmentation model learned from, so they are slightly cleaner than on new images.
 - Few glaucoma cases in some groups (CHAKSU Bosch test: 1; Forus test: 2), so no per-camera claims.
 - Glaucoma prevalence differs between CHAKSU (13%) and PAPILA (20%), which affects precision-style metrics.
-- One trained segmentation network per version. Retraining changed the PAPILA operating point a lot while leaving the AUC alone, so training variability is not covered by the confidence intervals (they only resample images).
+- One trained segmentation network per version. Retraining changed the PAPILA operating point a lot while leaving the AUC alone, so training variability is not covered by the confidence intervals (they only resample images). Running several seeds would show how much the PAPILA operating point varies; planned for the combined-model experiments.

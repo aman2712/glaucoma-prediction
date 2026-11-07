@@ -21,6 +21,13 @@ def table(n=6):
                          **{c: rng.uniform(0.2, 0.8, n) for c in COLUMNS}})
 
 
+def test_empty_text_cells_from_a_text_table_become_missing_values():
+    rows, measured = table(), table().astype({c: object for c in COLUMNS})
+    measured.loc[1, "vcdr"] = ""
+    joined = attach_measurements(rows[["image_id", "binary_label"]], measured, COLUMNS)
+    assert joined.vcdr.dtype == float and joined.vcdr.isna().tolist() == [False, True] + [False] * 4
+
+
 def test_scaler_uses_training_statistics_and_fills_missing_with_the_median():
     train = table()
     train.loc[0, "vcdr"] = np.nan

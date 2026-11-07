@@ -6,7 +6,7 @@ import pandas as pd
 
 def attach_measurements(rows: pd.DataFrame, measurements: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     """Add ``columns`` to ``rows`` by image ID. Every row needs a measurement entry (its value may be
-    NaN where no disc was found), and the label must agree with the one in ``rows``."""
+    NaN or empty where no disc was found), and the label must agree with the one in ``rows``."""
     if measurements.image_id.duplicated().any():
         raise ValueError("Duplicate image IDs in the measurements")
     joined = rows.merge(measurements[["image_id", "binary_label", *columns]], on="image_id", how="left",
@@ -15,6 +15,7 @@ def attach_measurements(rows: pd.DataFrame, measurements: pd.DataFrame, columns:
         raise ValueError("Some images have no measurement entry")
     if (joined.binary_label.astype(int) != joined.binary_label_measured.astype(int)).any():
         raise ValueError("Measurement labels disagree with the split labels")
+    joined[columns] = joined[columns].replace("", np.nan).astype(float)  # tables read as text hold "" for NaN
     return joined.drop(columns=["_merge", "binary_label_measured"])
 
 

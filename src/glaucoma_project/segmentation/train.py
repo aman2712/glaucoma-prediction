@@ -1,9 +1,7 @@
 """Train the disc/cup U-Net. Usage: python -m glaucoma_project.segmentation.train [--config PATH]"""
 import argparse
 import json
-import random
 import shutil
-import subprocess
 import time
 from pathlib import Path
 
@@ -15,22 +13,11 @@ import yaml
 from glaucoma_project import REPO_ROOT
 from glaucoma_project.data import make_loader
 from glaucoma_project.evaluation.metrics import dice
+from glaucoma_project.runtime import git_commit, pick_device, set_seed
 from glaucoma_project.segmentation.losses import DiceBCELoss
 from glaucoma_project.segmentation.model import DiscCupUNet
 
 RUNS_DIR = REPO_ROOT / "runs" / "segmentation"
-
-
-def pick_device() -> torch.device:
-    if torch.cuda.is_available():
-        return torch.device("cuda")
-    return torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-
-
-def set_seed(seed: int) -> None:
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
 
 
 @torch.no_grad()
@@ -51,9 +38,7 @@ def train(config: dict, config_path: Path) -> Path:
     run_dir = RUNS_DIR / config["run_name"]
     run_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy(config_path, run_dir / "config.yaml")
-    commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, capture_output=True,
-                            text=True).stdout.strip()
-    (run_dir / "run.json").write_text(json.dumps({"git_commit": commit, "device": str(device)}))
+    (run_dir / "run.json").write_text(json.dumps({"git_commit": git_commit(), "device": str(device)}))
 
     train_loader = make_loader("train", config["batch_size"], num_workers=config["num_workers"])
     val_loader = make_loader("validation", config["batch_size"], num_workers=config["num_workers"])

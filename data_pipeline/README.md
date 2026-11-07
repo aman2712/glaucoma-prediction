@@ -17,7 +17,7 @@ real data, the literature checked, and why the split is provisional, see
 | `external_test` | PAPILA | 420 | Only after model + thresholds are frozen |
 
 Full dataset: 1,833 images total (1,009 CHAKSU-train + 336 CHAKSU-test + 488
-PAPILA). See `docs/pipeline_evidence/split_summary.json`'s `limitation_note` and
+PAPILA). See `../docs/pipeline_evidence/split_summary.json`'s `limitation_note` and
 `DATA_PREPROCESSING.md` §5 for data issues and how they are provisionally handled.
 
 ## Pipeline
@@ -64,14 +64,14 @@ layout above.
 
 ## Environment
 
-`requirements.txt` covers preprocessing only. `load_images.py` needs
-`torch`/`torchvision` installed separately for training (its own docstring
-says so) — keep that environment file separate from this one.
+The repository-level `requirements.txt` covers this pipeline and the models.
+`load_images.py` additionally needs `torch`/`torchvision` (its own docstring
+says so).
 
 ## Tests
 
 ```bash
-cd script/tests && python3 -m unittest test_preparation -v
+cd tests && python3 -m unittest test_preparation -v
 ```
 11 tests, no dataset required, covers mask/measurement correctness and the
 split-quarantine logic against synthetic fixtures.

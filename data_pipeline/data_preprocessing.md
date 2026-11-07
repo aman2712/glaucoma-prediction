@@ -276,12 +276,12 @@ linkage was applied and nothing else was), and the limitation note verbatim.
     --patient-groups patient_groups.csv --allow-provisional \
     --limitation-note "<see §5 for exact text>"
   ```
-- Unit tests (`script/tests/test_preparation.py`, 11 tests) cover mask
+- Unit tests (`data_pipeline/tests/test_preparation.py`, 11 tests) cover mask
   validation, measurement correctness, contour rasterization, letterboxing,
   label-string parsing, deterministic grouped splitting, transitive duplicate
   grouping, and the split-quarantine logic (external overlap, release
   overlap, and the in-domain-test both-classes guard) — run with
-  `python3 -m unittest test_preparation -v` from `script/tests/`.
+  `python3 -m unittest test_preparation -v` from `data_pipeline/tests/`.
 
 ## 7. Leakage and limitations
 

@@ -76,7 +76,9 @@ def test_test_sets_are_scored_once_and_analysed(trained):
 
     baseline = pd.concat([pd.read_csv(scores / f"p01_combined_seed1_{p}.csv")[["image_id"]].assign(
         split=p, source="predicted", score=0.5) for p in ("in_domain_test", "external_test")])
-    tables = analyse(study, scores, tmp_path / "runs", tmp_path / "analysis", baseline)
+    measured = pd.read_csv(study["measurements"]).assign(vcdr=lambda t: t.vcdr.where(t.index % 5 != 0, np.nan))
+    tables = analyse(study, scores, tmp_path / "runs", tmp_path / "analysis", baseline, measured)
+    assert set(tables["no_disc"].group) == {"no_disc_found", "disc_found"} and len(tables["no_disc"]) == 8
     assert set(tables["primary"].partition) == {"in_domain_test", "external_test"}
     assert {"difference", "ci_low", "ci_high"} <= set(tables["primary"].columns)
     assert len(tables["per_seed"]) == 4 and len(tables["secondary"]) == 4

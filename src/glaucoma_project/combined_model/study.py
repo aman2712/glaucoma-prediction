@@ -26,7 +26,8 @@ STUDY_CONFIG = REPO_ROOT / "configs" / "p01.yaml"
 MANIFEST = REPO_ROOT / "docs" / "frozen_p01.json"
 TEST_PARTITIONS = ("in_domain_test", "external_test")
 CODE_PATHS = [f"src/glaucoma_project/{name}" for name in
-              ("combined_model", "image_model", "data", "evaluation", "runtime.py", "files.py", "freeze.py")] + [
+              ("combined_model/__init__.py", "combined_model/study.py", "combined_model/analysis.py", "image_model",
+               "data", "evaluation", "runtime.py", "files.py", "freeze.py")] + [
               "configs/p01.yaml", "configs/p01_image_only.yaml", "configs/p01_combined.yaml"]
 
 

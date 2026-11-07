@@ -50,9 +50,25 @@ def _validation_threshold(runs_dir: Path, study: dict, arm: str) -> float:
     return select_threshold(validation.label, validation.probability, study["target_sensitivity"])
 
 
-def analyse(study: dict, scores: Path, runs_dir: Path, out: Path, baseline_a: pd.DataFrame) -> dict[str, pd.DataFrame]:
+def _no_disc_table(arms: dict, measurements: pd.DataFrame) -> pd.DataFrame:
+    """AUC of each arm on the test images where the segmentation network found no disc (their
+    ratios were filled with the training median) and on the rest. NaN where a group has one class."""
+    missing = set(measurements.loc[measurements.vcdr.isna(), "image_id"])
+    rows = []
+    for (arm, part), scores in arms.items():
+        for label, group in (("no_disc_found", scores[scores.image_id.isin(missing)]),
+                             ("disc_found", scores[~scores.image_id.isin(missing)])):
+            both = group.label.nunique() == 2
+            rows.append({"arm": arm, "partition": part, "group": label, "n": len(group),
+                         "positives": int(group.label.sum()),
+                         "auroc": roc_auc_score(group.label, group.logit) if both else float("nan")})
+    return pd.DataFrame(rows)
+
+
+def analyse(study: dict, scores: Path, runs_dir: Path, out: Path, baseline_a: pd.DataFrame,
+            measurements: pd.DataFrame) -> dict[str, pd.DataFrame]:
     """Write and return the P01 result tables. ``baseline_a`` holds the frozen Baseline A test scores
-    (``image_id``, ``split``, ``source``, ``score``)."""
+    (``image_id``, ``split``, ``source``, ``score``); ``measurements`` the ratios fed to the combined arm."""
     out.mkdir(parents=True, exist_ok=True)
     n, seed = study["n_bootstrap"], study["bootstrap_seed"]
     seeds = {(arm, part): _frames(scores, study, arm, part) for arm in study["arms"] for part in TEST_PARTITIONS}
@@ -78,7 +94,8 @@ def analyse(study: dict, scores: Path, runs_dir: Path, out: Path, baseline_a: pd
             per_seed.append({"partition": part, "seed": run_seed, **aucs,
                              "difference": aucs["combined"] - aucs["image_only"]})
     tables = {"arm_metrics": pd.concat(metrics, ignore_index=True), "primary": pd.DataFrame(primary),
-              "secondary": pd.DataFrame(secondary), "per_seed": pd.DataFrame(per_seed)}
+              "secondary": pd.DataFrame(secondary), "per_seed": pd.DataFrame(per_seed),
+              "no_disc": _no_disc_table(arms, measurements)}
     for name, table in tables.items():
         table.to_csv(out / f"{name}.csv", index=False)
     return tables
@@ -91,5 +108,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     settings = load_study()
     baseline = pd.read_csv(REPO_ROOT / settings["baseline_a_scores"])
-    results = analyse(settings, args.scores, REPO_ROOT / settings["runs_dir"], args.out, baseline)
+    results = analyse(settings, args.scores, REPO_ROOT / settings["runs_dir"], args.out, baseline,
+                      pd.read_csv(REPO_ROOT / settings["measurements"]))
     print(results["primary"].to_string(index=False))

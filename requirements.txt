@@ -3,6 +3,7 @@ openpyxl==3.1.5
 ipykernel==7.3.0
 numpy==2.3.5
 torch==2.14.1
+torchvision==0.29.1
 pandas==3.0.6
 scikit-learn==1.9.1
 matplotlib==3.11.2

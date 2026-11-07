@@ -1,0 +1,14 @@
+run_name: resnet18
+model_name: resnet18        # resnet18 | resnet50 | efficientnet_b0
+pretrained: true            # start from ImageNet weights (false only for software tests)
+seed: 2440
+batch_size: 16
+epochs: 25
+warmup_epochs: 2            # epochs that train only the new head
+patience: 6                 # fine-tuning epochs without validation AUROC gain before stopping
+head_lr: 0.0001
+backbone_lr: 0.00001
+weight_decay: 0.0001
+augment: true               # mild brightness, contrast and saturation jitter (training only)
+target_sensitivity: 0.9     # the threshold keeps at least this sensitivity on validation
+n_bootstrap: 1000           # resamples for the final test confidence intervals

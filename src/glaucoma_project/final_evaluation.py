@@ -11,8 +11,8 @@ from glaucoma_project.evaluation.classification import evaluate
 from glaucoma_project.evaluation.metrics import agreement, dice
 from glaucoma_project.freeze import verify
 from glaucoma_project.measurements.extract import measure_split
+from glaucoma_project.runtime import pick_device
 from glaucoma_project.segmentation.predict import load_model, predict_dataset
-from glaucoma_project.segmentation.train import pick_device
 
 OUT_DIR = REPO_ROOT / "runs" / "final"
 TEST_SPLITS = ("in_domain_test", "external_test")

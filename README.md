@@ -1,77 +1,55 @@
-# Data Preparation
+# Anatomy-informed glaucoma prescreening from fundus photographs
 
-Glaucoma prescreening from fundus images. Development on **CHAKSU**
-(Kumar et al., 2023), external test on **PAPILA** (Kovalyk et al., 2022).
+Does adding automatically estimated optic-disc and optic-cup measurements improve glaucoma
+prediction compared with using the photograph alone? ENG 2440 capstone project of Indira
+Duisembayeva, Md Aman Khan and Yomna Elnikety. This is a research prototype, not a diagnostic system.
 
-**For the full account of every decision, the bugs found running this against
-real data, the literature checked, and why the split is provisional, see
-[`DATA_PREPROCESSING.md`](DATA_PREPROCESSING.md).**
+Data: **CHAKSU** for development and in-domain testing, **PAPILA** as a fully external test
+(not committed to this repository, see [`data_pipeline/README.md`](data_pipeline/README.md)).
 
-## Evaluation tiers 
+## Models
 
-| Split | Source | Classification images | When it may be touched |
+| Model | Sees | Description | Code |
 |---|---|---|---|
-| `train` | CHAKSU train release | 807 | Freely, during development |
-| `validation` | CHAKSU train release | 202 | Freely, during development |
-| `in_domain_test` | CHAKSU test release | 336 | Only after model + hyperparameters are frozen |
-| `external_test` | PAPILA | 420 | Only after model + thresholds are frozen |
+| Baseline A | measurements from predicted disc/cup masks | [`docs/baseline_a.md`](docs/baseline_a.md) | `segmentation/`, `measurements/`, `classification/` |
+| Baseline B | the photograph only | [`docs/image_model.md`](docs/image_model.md) | `image_model/` |
+| Combined | both | planned | |
 
-Full dataset: 1,833 images total (1,009 CHAKSU-train + 336 CHAKSU-test + 488
-PAPILA). See `docs/pipeline_evidence/split_summary.json`'s `limitation_note` and
-`DATA_PREPROCESSING.md` §5 for data issues and how they are provisionally handled.
+## Layout
 
-## Pipeline
-
-```bash
-python prepare_data.py inventory --config config.json --out artifacts
-python prepare_data.py prepare   --config config.json --out artifacts
-# review artifacts/near_duplicate_review.csv and artifacts/quality_review.csv,
-# then optionally: python extract_bosch_test_patients.py --out artifacts --write patient_groups.csv
-python prepare_data.py split --config config.json --out artifacts \
-  --patient-groups patient_groups.csv --allow-provisional \
-  --limitation-note "..."
+```
+data_pipeline/   data preparation: inventory, masks, frozen splits (own README)
+src/glaucoma_project/
+  data/          audit of the prepared export, effective split, datasets and loaders
+  segmentation/  disc/cup U-Net
+  measurements/  masks -> cup-to-disc ratios
+  classification/  logistic regression on measurements
+  image_model/   image-only CNN: train, freeze, final evaluation
+  evaluation/    metrics, bootstrap, paired comparison
+configs/         settings of each model (YAML)
+tests/           unit tests (no patient data needed)
+notebooks/       one driver notebook per model, plus data exploration
+docs/            protocols, results, and saved evidence
+runs/ data/      local only (git-ignored): outputs and datasets
 ```
 
-`config.json` needs `chaksu_train_root`, `chaksu_test_root`, and `papila_root`
-pointing at your local downloads (siblings of this folder by default, see
-`../Train`, `../Test`, `../PapilaDB-...`). Datasets are **not** committed to
-this repo, download them separately (CHAKSU: figshare/IISc-MAHE release;
-PAPILA: figshare, doi:10.1038/s41597-022-01388-1) and place them per the
-layout above.
-
-## What needs to be reviewed before `split`
-
-- `near_duplicate_review.csv` - candidate near duplicate pairs (dHash on the
-  cropped, camera-restricted image). Set each `decision` to `duplicate`/`not_duplicate`.
-- `quality_review.csv` — per-image mask sanity flags.
-- CHAKSU patient linkage — see `DATA_PREPROCESSING.md` §5. Real, filename-
-  derived linkage exists for the Bosch test release only
-  (`extract_bosch_test_patients.py`); everything else requires
-  `--allow-provisional --limitation-note`.
-
-## Leakage guards built into `split`
-
-- Images sharing a `patient_id`, an exact pixel hash, or a manually confirmed
-  duplicate decision are grouped and never split across tiers.
-- A CHAKSU image identity spanning both CHAKSU releases is excluded from both
-  (`quarantine_release_overlap`); one spanning CHAKSU and PAPILA is excluded
-  from CHAKSU's side (`quarantine_external_overlap`). Both are `0` in the
-  current real run.
-- `split` refuses to finish if `in_domain_test` loses a whole class to
-  quarantine.
-- Splits are frozen once written - rerunning `split` on an existing `--out`
-  raises rather than silently overwriting.
-
-## Environment
-
-`requirements.txt` covers preprocessing only. `load_images.py` needs
-`torch`/`torchvision` installed separately for training (its own docstring
-says so) — keep that environment file separate from this one.
-
-## Tests
+## Setup
 
 ```bash
-cd script/tests && python3 -m unittest test_preparation -v
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt && pip install -e .
 ```
-11 tests, no dataset required, covers mask/measurement correctness and the
-split-quarantine logic against synthetic fixtures.
+
+Prepare the data first (see [`data_pipeline/README.md`](data_pipeline/README.md)); the models read it from `runs/prep`.
+
+## Run
+
+```bash
+python -m glaucoma_project.segmentation.train          # Baseline A: U-Net, then notebooks/03_baseline_a.ipynb
+python -m glaucoma_project.image_model.develop         # Baseline B: audit, train, validation report
+python -m glaucoma_project.image_model.final --run-dir runs/image_model/resnet18   # freeze + one-shot test evaluation
+pytest                                                  # all unit tests
+```
+
+Every run writes its configuration, git commit and metrics to its own folder under `runs/`.
+Test sets are evaluated once, after the model and threshold are frozen.

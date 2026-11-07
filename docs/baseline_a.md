@@ -11,7 +11,7 @@ and does the classifier hold up on a different camera and hospital (PAPILA)?
 4. **Oracle** (reference only): the same classifier on measurements from expert masks. The gap to Baseline A is the cost of segmentation error.
 
 ## Data and splits
-Frozen by `script/prepare_data.py` (seed 2440); see `DATA_PREPROCESSING.md`.
+Frozen by `data_pipeline/prepare_data.py` (seed 2440); see `data_pipeline/DATA_PREPROCESSING.md`.
 
 | Split | Role | Images (segmentation) |
 |---|---|---|

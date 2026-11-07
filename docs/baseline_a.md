@@ -26,6 +26,7 @@ PAPILA "suspect" eyes are excluded from classification. PAPILA is never used for
 - The U-Net is trained on train; the validation split picks its best epoch.
 - The classifier uses all development images (train and validation), because validation alone has only 27 glaucoma cases. The regularisation strength C is chosen by 5-fold cross-validation (images of one analysis group, meaning the same patient, a duplicate or a possible repeat patient, kept in one fold). The decision threshold is Youden's J on the pooled out-of-fold scores. The final classifier is then fitted on all development images.
 - Everything is frozen and committed (`docs/frozen_baseline_a_common_split.json`: code version and file hashes, including the split file) before any test image is touched.
+- The freeze records the code version and the hash of each file. Later work changed `src/` for other models, so the code check (`freeze.verify`) passes only at the frozen commit 55ff4b4; the file hashes (`freeze.verify_files`) still pass and are what later experiments rely on.
 - The test sets are evaluated once, by `final_evaluation.py`, which refuses to run on a changed pipeline or to run twice.
 - 95% confidence intervals: bootstrap, 2,000 resamples, over images.
 

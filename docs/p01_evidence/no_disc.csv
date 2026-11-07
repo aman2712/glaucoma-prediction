@@ -1,0 +1,9 @@
+arm,partition,group,n,positives,auroc
+image_only,in_domain_test,no_disc_found,0,0,
+image_only,in_domain_test,disc_found,335,51,0.8133112399889533
+image_only,external_test,no_disc_found,30,9,0.6666666666666666
+image_only,external_test,disc_found,390,78,0.7708744247205785
+combined,in_domain_test,no_disc_found,0,0,
+combined,in_domain_test,disc_found,335,51,0.8162800331400165
+combined,external_test,no_disc_found,30,9,0.6507936507936507
+combined,external_test,disc_found,390,78,0.7784763313609467

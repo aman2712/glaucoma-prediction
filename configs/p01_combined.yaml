@@ -1,0 +1,16 @@
+# P01, combined arm: identical to p01_image_only.yaml except that the three ratios also enter the model.
+run_name: p01_combined
+model_name: resnet18
+pretrained: true
+seed: 2440                  # overridden per run by --seed
+batch_size: 16
+epochs: 25
+warmup_epochs: 2
+patience: 6
+head_lr: 0.0001
+backbone_lr: 0.00001
+weight_decay: 0.0001
+augment: true
+target_sensitivity: 0.9
+n_bootstrap: 1000
+measurement_columns: [vcdr, hcdr, area_cdr]   # predicted ratios, standardised with training statistics

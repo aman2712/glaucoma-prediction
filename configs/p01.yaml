@@ -1,0 +1,11 @@
+# P01 study (design in docs/experiment_log.md): image-only vs combined, same recipe, several seeds.
+arms:
+  image_only: configs/p01_image_only.yaml
+  combined: configs/p01_combined.yaml
+seeds: [2440, 2441, 2442, 2443, 2444]
+runs_dir: runs/p01
+measurements: runs/p01/measurements.csv
+baseline_a_scores: runs/final/common_split/scores.csv    # frozen Baseline A, measurements-only reference
+n_bootstrap: 2000
+bootstrap_seed: 2440
+target_sensitivity: 0.9

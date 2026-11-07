@@ -48,12 +48,16 @@ def make_transform(augment: bool = False) -> transforms.Compose:
 
 
 class FundusDataset(Dataset):
-    """Items are (normalised image, label as float tensor, image_id)."""
+    """Items are (normalised image, label as float tensor, image_id). With ``measurement_columns``
+    the first element is a pair (image, measurements), the measurements read from the rows as given."""
 
-    def __init__(self, rows: pd.DataFrame, root: Path, augment: bool = False):
+    def __init__(self, rows: pd.DataFrame, root: Path, augment: bool = False,
+                 measurement_columns: list[str] | None = None):
         self.rows = rows.reset_index(drop=True)
         self.root = Path(root)
         self.transform = make_transform(augment)
+        self.measurements = (torch.tensor(self.rows[measurement_columns].to_numpy(float), dtype=torch.float32)
+                             if measurement_columns else None)
 
     def __len__(self) -> int:
         return len(self.rows)
@@ -62,12 +66,14 @@ class FundusDataset(Dataset):
         row = self.rows.iloc[index]
         with Image.open(image_path(self.root, row.classification_image)) as image:
             tensor = self.transform(image.convert("RGB"))
-        return tensor, torch.tensor(float(row.binary_label)), row.image_id
+        inputs = tensor if self.measurements is None else (tensor, self.measurements[index])
+        return inputs, torch.tensor(float(row.binary_label)), row.image_id
 
 
 def make_loader(rows: pd.DataFrame, root: Path, config: dict, training: bool = False) -> DataLoader:
     """Shuffled (with a seeded generator) and augmented only when ``training``."""
-    dataset = FundusDataset(rows, root, augment=training and config["augment"])
+    dataset = FundusDataset(rows, root, augment=training and config["augment"],
+                            measurement_columns=config.get("measurement_columns"))
     generator = torch.Generator().manual_seed(config["seed"])
     return DataLoader(dataset, batch_size=config["batch_size"], shuffle=training, generator=generator)
 

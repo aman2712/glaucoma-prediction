@@ -63,43 +63,43 @@ def test_cameras_with_few_cases_are_flagged():
     assert cameras.small_class_count.tolist() == [True]
 
 
-def test_development_freeze_and_one_shot_final_evaluation(export, tmp_path):
+def test_development_freeze_and_one_shot_final_evaluation(export, common_split, tmp_path):
     root, _ = export
-    run = develop(CONFIG, root=root, runs_dir=tmp_path / "runs")
+    run = develop(CONFIG, root=root, runs_dir=tmp_path / "runs", splits_dir=common_split)
     expected = {"best.pt", "config.json", "run.json", "input_audit.json", "history.csv", "learning_curves.png",
                 "validation_predictions.csv", "validation_metrics.csv", "validation_camera_metrics.csv"}
     assert expected <= {p.name for p in run.iterdir()}
     assert not (run / "final_evaluation").exists()  # development never touches the test splits
-    final.check_saved_run(run)
+    final.check_saved_run(run, common_split)
 
-    protocol = final.freeze_run(run)
-    assert protocol["threshold"] == operating_threshold(run) and final.freeze_run(run) == protocol
-    result = final.final_evaluation(run, CPU, root)
+    protocol = final.freeze_run(run, common_split)
+    assert protocol["threshold"] == operating_threshold(run) and final.freeze_run(run, common_split) == protocol
+    result = final.final_evaluation(run, CPU, root, common_split)
     assert result.partition.tolist() == ["in_domain_test", "in_domain_test", "external_test", "external_test"]
     assert (run / "final_evaluation" / "completion.json").exists()
     assert json.loads((run / "final_evaluation" / "completion.json").read_text())["complete"]
     with pytest.raises(FileExistsError):
-        final.final_evaluation(run, CPU, root)
+        final.final_evaluation(run, CPU, root, common_split)
     with pytest.raises(ValueError, match="already exists"):
-        final.check_saved_run(run)
+        final.check_saved_run(run, common_split)
 
     Image.new("RGB", (80, 40), (200, 100, 50)).save(tmp_path / "new.png")
     score = score_photo(run, tmp_path / "new.png", CPU)
     assert 0 <= score["glaucoma_suspicion_score"] <= 1 and score["threshold"] == protocol["threshold"]
 
 
-def test_a_changed_checkpoint_is_refused_after_freezing(export, tmp_path):
+def test_a_changed_checkpoint_is_refused_after_freezing(export, common_split, tmp_path):
     root, _ = export
-    run = develop(CONFIG, root=root, runs_dir=tmp_path / "runs")
-    final.freeze_run(run)
+    run = develop(CONFIG, root=root, runs_dir=tmp_path / "runs", splits_dir=common_split)
+    final.freeze_run(run, common_split)
     (run / "best.pt").write_bytes((run / "best.pt").read_bytes() + b"0")
     with pytest.raises(ValueError, match="Checkpoint changed"):
-        final.final_evaluation(run, CPU, root)
+        final.final_evaluation(run, CPU, root, common_split)
     assert not (run / "final_evaluation").exists()
 
 
-def test_a_run_folder_is_never_reused(export, tmp_path):
+def test_a_run_folder_is_never_reused(export, common_split, tmp_path):
     root, _ = export
-    develop(CONFIG, root=root, runs_dir=tmp_path / "runs")
+    develop(CONFIG, root=root, runs_dir=tmp_path / "runs", splits_dir=common_split)
     with pytest.raises(FileExistsError):
-        develop(CONFIG, root=root, runs_dir=tmp_path / "runs")
+        develop(CONFIG, root=root, runs_dir=tmp_path / "runs", splits_dir=common_split)

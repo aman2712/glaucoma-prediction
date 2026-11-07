@@ -13,7 +13,7 @@ from glaucoma_project import COMMON_SPLIT_DIR, PREPARED_ROOT
 SPLITS = ("train", "validation", "in_domain_test", "external_test")
 
 
-def _read_image(path: Path, mode: str) -> torch.Tensor:
+def read_image(path: Path, mode: str) -> torch.Tensor:
     """Load a PNG as float32 in [0, 1], shaped (C, H, W)."""
     array = np.asarray(Image.open(path).convert(mode), dtype=np.float32) / 255.0
     return torch.from_numpy(array if array.ndim == 3 else array[..., None]).permute(2, 0, 1)
@@ -45,9 +45,9 @@ class SegmentationDataset(Dataset):
 
     def __getitem__(self, index: int) -> dict:
         row = self.table.iloc[index]
-        image = _read_image(self.root / row["segmentation_image"], "RGB")
-        disc = _read_image(self.root / row["disc_mask"], "L")
-        cup = _read_image(self.root / row["cup_mask"], "L")
+        image = read_image(self.root / row["segmentation_image"], "RGB")
+        disc = read_image(self.root / row["disc_mask"], "L")
+        cup = read_image(self.root / row["cup_mask"], "L")
         mask = (torch.cat([disc, cup]) > 0.5).float()
         if self.augment:
             image, mask = self._augment(image, mask)

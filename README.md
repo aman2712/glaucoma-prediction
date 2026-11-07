@@ -13,7 +13,7 @@ Data: **CHAKSU** for development and in-domain testing, **PAPILA** as a fully ex
 |---|---|---|---|
 | Baseline A | measurements from predicted disc/cup masks | [`docs/baseline_a.md`](docs/baseline_a.md) | `segmentation/`, `measurements/`, `classification/` |
 | Baseline B | the photograph only | [`docs/image_model.md`](docs/image_model.md) | `image_model/` |
-| Combined | both | design in [`docs/experiment_log.md`](docs/experiment_log.md) (P01) | `combined_model/`, `hpc/` |
+| Combined | both | [`docs/combined_model.md`](docs/combined_model.md) | `combined_model/`, `hpc/` |
 
 ## Layout
 

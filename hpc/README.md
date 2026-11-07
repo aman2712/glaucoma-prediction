@@ -7,8 +7,8 @@ when finished.
 ## One-time setup
 1. Log in: `ssh <user>@login-student-lab.mbzu.ae`, then start `tmux` so the session survives a disconnect.
 2. Get an allocation: `salloc -N1 -n12 --mem=24G` (add the GPU option the lab documents; `sinfo` lists what exists).
-3. Clone the repository into the work directory (`/l/users/<user>/`, 3 TB; home is 1 TB) and check out the branch.
-4. `bash hpc/setup_env.sh` creates the `glaucoma` conda environment and prints whether the GPU is visible.
+3. The repository is private and the cluster has no GitHub login, so copy it with `git bundle create p01.bundle main <branch>`, `rsync` the bundle over and `git clone -b <branch> p01.bundle` there. Clone the repository into the work directory (`/l/users/<user>/`, 3 TB; home is 1 TB) and check out the branch.
+4. `bash hpc/setup_env.sh` creates the `glaucoma` conda environment and prints whether the GPU is visible. The lab's driver supports CUDA 12.8, so it installs torch 2.11.0 (the newest CUDA 12.8 build) instead of the version in `requirements.txt`.
 5. Copy the prepared data and the inputs from your computer, then check the copy:
    `rsync -av runs/prep/ <user>@login-student-lab.mbzu.ae:<repo>/runs/prep/`, the same for `runs/p01/measurements.*`,
    `runs/final/common_split/scores.csv`, then `python -m glaucoma_project.data.common_split --check`

@@ -30,6 +30,37 @@ Hypotheses are fixed here before any run. Each needs the team's agreement on the
 | ID | Type | Hypothesis | Design | Metric and decision rule | Status |
 |---|---|---|---|---|---|
 | P00 | decision | One common split for all models makes the comparison fair. | The effective split (Baseline B's) becomes the split of record in `splits/`. Baseline A is re-run on it (E10). | Same image IDs and hashes for every model. | Done (E10, E11) |
-| P01 | experiment | Adding predicted measurements to the image features improves glaucoma prediction over the image alone (the project question). | Image-only vs measurements-only vs combined (same frozen image features plus the three ratios, linear classifier), identical splits, frozen before testing. | Paired bootstrap AUC difference on CHAKSU test and PAPILA separately. Called an improvement only if the 95% interval excludes 0. CHAKSU gain alone is treated as possibly circular, because its labels follow CDR. | Proposed |
+| P01 | experiment | Adding the automatically measured cup-to-disc ratios to the photograph as model input improves glaucoma prediction over the photograph alone (the project question). | Same CNN and recipe trained with and without the three ratios, 5 seeds each; full design in "P01 design" below. | AUC difference, combined minus image-only, paired bootstrap over patient groups, each test set separately. Called an improvement only if the 95% interval excludes 0. | Design fixed; awaiting code and freeze |
 | P02 | experiment | Segmentation error limits the combined model. | Combined model with predicted vs expert masks. | AUC gap on both test sets; the gap measures the cost of segmentation error. | Proposed |
 | P03 | experiment | One principled correction reduces the PAPILA drop without using PAPILA labels for tuning. | Choose one before looking (for example recalibrating the threshold, or stronger photometric augmentation of the segmentation model) using a CHAKSU-only development subset. | PAPILA AUC and sensitivity at the frozen rule, before vs after; reported even if it does not help. This is also the bonus mitigation. | Proposed |
+
+## P01 design
+
+Fixed before any P01 model is trained. Changing any item below after seeing a P01 result makes the result post-hoc.
+
+**Arms** (all use `splits/all.csv`; the test sets are used once, after freezing):
+- **Image-only:** ResNet-18 with the Baseline B recipe (`configs/image_model.yaml`), photograph only.
+- **Combined (primary):** the same network and recipe. The three predicted ratios (vertical, horizontal, area CDR) are standardised with training-set statistics and joined to the 512 pooled image features before the final layer. Nothing else differs from the image-only arm.
+- **Measurements-only:** frozen Baseline A (`docs/frozen_baseline_a_common_split.json`), not retrained.
+
+**Inputs.** Ratios come from the frozen Baseline A U-Net, never from expert masks. They are computed for every image of the classification split, including those without expert masks (the U-Net needs only the photograph and no labels). Images with no detected disc get the training median, as in Baseline A; their results are also reported separately.
+
+**Training and seeds.** Each arm is trained with 5 seeds (2440 to 2444). Epoch selection and early stopping follow Baseline B (best validation AUROC) and use CHAKSU validation only. All runs happen on the same GPU type. Each run records its commit, library versions and device.
+
+**Scores.** The primary score of an arm is the mean of its 5 seeds' logits per image. The per-seed AUC differences are reported alongside, to show training variability.
+
+**Primary comparison.** Combined minus image-only, AUC, on CHAKSU test and PAPILA separately and never pooled. Paired bootstrap, 2,000 resamples of whole `analysis_group`s, 95% interval, seed-averaged scores. Improvement only if the interval excludes 0. A difference with an interval that includes 0 is reported as "not shown", not as "no effect".
+
+**Secondary comparisons** (reported, not used for the headline claim):
+- Combined vs measurements-only on the images they share: does the photograph add to the measurements?
+- **Two-step blend:** image scores cross-fitted over 5 grouped folds of the development data (same 5 seeds, fold assignment seed 2440, fixed epoch count taken from the validation-only development run), then a logistic regression on the image score plus the three ratios, against the cross-fitted image score alone. Run after the primary result is recorded.
+- Sensitivity and specificity at the Baseline B threshold rule (90% sensitivity on validation), descriptive only.
+
+**Stated caveats.**
+- CHAKSU labels follow CDR closely, so a CHAKSU gain may be circular; PAPILA is the more informative test.
+- The network may lean on the ratios and learn little from the image. The comparison with measurements-only shows whether the image still adds anything.
+- Training-set ratios come from images the U-Net learned from, so they are slightly cleaner than on new images.
+- With 50 CHAKSU and 85 PAPILA test positives, only fairly large differences are detectable.
+- The image-only arm is a new run, not the E07 checkpoint, which is kept as the earlier reference.
+
+**Freeze.** Configs, code commit, split and measurement files are recorded with SHA-256 before the test sets are opened, using the same mechanism as Baseline A.

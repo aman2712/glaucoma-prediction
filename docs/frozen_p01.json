@@ -1,0 +1,88 @@
+{
+  "git_commit": "45c2dc1b4bef85f9b8eee47e66c3684ff110a89c",
+  "code_paths": [
+    "src/glaucoma_project/combined_model/__init__.py",
+    "src/glaucoma_project/combined_model/study.py",
+    "src/glaucoma_project/combined_model/analysis.py",
+    "src/glaucoma_project/image_model",
+    "src/glaucoma_project/data",
+    "src/glaucoma_project/evaluation",
+    "src/glaucoma_project/runtime.py",
+    "src/glaucoma_project/files.py",
+    "src/glaucoma_project/freeze.py",
+    "configs/p01.yaml",
+    "configs/p01_image_only.yaml",
+    "configs/p01_combined.yaml"
+  ],
+  "files": {
+    "image_only_seed2440": {
+      "path": "runs/p01/p01_image_only_seed2440/best.pt",
+      "sha256": "ab3cc0d3693743cb56a94cecc5c4940e2de2482d6969f044fa84615971f90770"
+    },
+    "image_only_seed2441": {
+      "path": "runs/p01/p01_image_only_seed2441/best.pt",
+      "sha256": "f73cf9aeba9e1107150fa108bf2802aab96272478cf2a0a10408aef65e56abf3"
+    },
+    "image_only_seed2442": {
+      "path": "runs/p01/p01_image_only_seed2442/best.pt",
+      "sha256": "b8cecaecce5326827a980674831dc6bf3557f8514ac97ffdeec8c4aaaf00004d"
+    },
+    "image_only_seed2443": {
+      "path": "runs/p01/p01_image_only_seed2443/best.pt",
+      "sha256": "3c527bdb7305025eb6f71285f1a92e2e7534a3c21830db8963105fcccb0067e5"
+    },
+    "image_only_seed2444": {
+      "path": "runs/p01/p01_image_only_seed2444/best.pt",
+      "sha256": "43b896ec25d6ac42dede1f2b4ca90f76c058a40c7cf95bcb533e66edab0f9884"
+    },
+    "combined_seed2440": {
+      "path": "runs/p01/p01_combined_seed2440/best.pt",
+      "sha256": "8e42e9350b8c687511bfd17a95580ae023a5655de923d71313f630753fdf9353"
+    },
+    "combined_seed2441": {
+      "path": "runs/p01/p01_combined_seed2441/best.pt",
+      "sha256": "0b30decd2ffb0d6834cf9bbc5983e61b77eb267b3df7b399cdf3308aac896109"
+    },
+    "combined_seed2442": {
+      "path": "runs/p01/p01_combined_seed2442/best.pt",
+      "sha256": "ae763c8d25cb5751e62411a173e207c9240065c4ab574a927e9b87132bfa0fd2"
+    },
+    "combined_seed2443": {
+      "path": "runs/p01/p01_combined_seed2443/best.pt",
+      "sha256": "7923ac19b4e392613d88801d24e12918453f1b856eb08aacf8c8e331ce656d9f"
+    },
+    "combined_seed2444": {
+      "path": "runs/p01/p01_combined_seed2444/best.pt",
+      "sha256": "4daf308861ba79755f4fe5e7ee22af28fed54cfa74f431c173835d8cea78786f"
+    },
+    "measurements": {
+      "path": "runs/p01/measurements.csv",
+      "sha256": "3f0466e2ddc906996c6b41aa7962f884aa00a976fe189f26969d4d30998850c5"
+    },
+    "common_split": {
+      "path": "splits/all.csv",
+      "sha256": "4590df4ee6e6ce8ed722786cdb49220b632468184222fb9760c396e5cbf37094"
+    }
+  },
+  "settings": {
+    "study": {
+      "arms": {
+        "image_only": "configs/p01_image_only.yaml",
+        "combined": "configs/p01_combined.yaml"
+      },
+      "seeds": [
+        2440,
+        2441,
+        2442,
+        2443,
+        2444
+      ],
+      "runs_dir": "runs/p01",
+      "measurements": "runs/p01/measurements.csv",
+      "baseline_a_scores": "runs/final/common_split/scores.csv",
+      "n_bootstrap": 2000,
+      "bootstrap_seed": 2440,
+      "target_sensitivity": 0.9
+    }
+  }
+}

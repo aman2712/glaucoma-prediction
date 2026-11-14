@@ -18,6 +18,11 @@ def sensitivity_at_specificity(y: np.ndarray, score: np.ndarray, specificity: fl
     return float(tpr[fpr <= 1 - specificity].max())
 
 
+def balanced_accuracy(y: np.ndarray, decision: np.ndarray) -> float:
+    """Mean of sensitivity and specificity for 0/1 ``decision``."""
+    return float((decision[y == 1].mean() + (1 - decision[y == 0]).mean()) / 2)
+
+
 def classification_metrics(y: np.ndarray, score: np.ndarray, threshold: float) -> dict:
     predicted = score >= threshold
     sensitivity = float(predicted[y == 1].mean())
@@ -28,7 +33,7 @@ def classification_metrics(y: np.ndarray, score: np.ndarray, threshold: float) -
         "specificity": specificity,
         "sensitivity_at_95_specificity": sensitivity_at_specificity(y, score),
         "auprc": float(average_precision_score(y, score)),
-        "balanced_accuracy": (sensitivity + specificity) / 2,
+        "balanced_accuracy": balanced_accuracy(y, predicted.astype(float)),
     }
 
 

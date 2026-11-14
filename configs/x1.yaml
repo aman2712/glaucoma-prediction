@@ -1,0 +1,7 @@
+# X1 (design in docs/experiment_log.md, "X-series design"): per-dataset standardisation of the three ratios.
+measurements: runs/p01/measurements.csv      # predicted ratios of every classification image (E12)
+features: [vcdr, hcdr, area_cdr]
+c_grid: [0.001, 0.01, 0.1, 1, 10, 100]
+cv_folds: 5
+seed: 2440
+n_bootstrap: 2000

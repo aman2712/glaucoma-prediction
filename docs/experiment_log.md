@@ -134,3 +134,5 @@ Fixed on 2026-11-14, before any X experiment is run. Motivation: E13 and E14 sho
 
 **Stated limits.** The gate proxy has 35 positives and cannot reflect PAPILA's label convention. Variants may fail the gate for noise reasons and are then not tested. Seeds cover training variability; the intervals cover test-image sampling only.
 
+**X1 clarification (written before any X1 result, after the gate design).** Both arms of X1 are refitted with the Baseline A recipe on the same 335 and 420 test images and the same development images: one on the ratios as measured, one on the standardised ratios. C comes from grouped cross-validated AUC and the threshold from Youden's J on out-of-fold development scores, in each arm. This replaces "the threshold of frozen Baseline A", which cannot apply to rescaled inputs, and gives a paired comparison on identical images. Standardisation is within the development images, within CHAKSU test and within PAPILA. Frozen Baseline A (0.943, 0.731) stays as the reference.
+

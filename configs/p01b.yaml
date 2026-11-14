@@ -1,0 +1,21 @@
+# P01b study (design in docs/experiment_log.md, "P01b design"): image scores that never saw their own
+# images, blended with the three predicted cup-to-disc ratios.
+recipe:                       # the P01 image-only recipe; the seed is set per job
+  model_name: resnet18
+  pretrained: true
+  batch_size: 16
+  warmup_epochs: 2
+  head_lr: 0.0001
+  backbone_lr: 0.00001
+  weight_decay: 0.0001
+  augment: true
+epochs: 10                    # fixed: median best epoch of the five P01 image-only runs (validation only)
+n_folds: 5
+fold_seed: 2440
+seeds: [2440, 2441, 2442, 2443, 2444]
+c_grid: [0.001, 0.01, 0.1, 1, 10, 100]
+runs_dir: runs/p01b
+measurements: runs/p01/measurements.csv
+baseline_a_scores: runs/final/common_split/scores.csv
+n_bootstrap: 2000
+bootstrap_seed: 2440

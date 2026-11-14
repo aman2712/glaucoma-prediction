@@ -38,3 +38,4 @@ Source: `docs/p01_evidence/` (`primary.csv`, `secondary.csv`, `per_seed.csv`, `a
 - The ratios of training images come from images the U-Net learned from, so they are slightly cleaner than on new images.
 - Intervals describe sampling of test images; the seed spread is reported separately.
 - A first scoring attempt failed on a software bug before any metric was computed; the runs were frozen again after the fix (experiment log, E13).
+- Later work (P01b) extended shared modules (`image_model/train.py`, `runtime.py`), so the code check of `docs/frozen_p01.json` (`freeze.verify`) passes only at its frozen commit `02becaa`. The hashes of the checkpoints and inputs (`freeze.verify_files`) still pass and are what the results rely on.

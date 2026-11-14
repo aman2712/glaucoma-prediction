@@ -6,12 +6,9 @@ model. ``--seed`` overrides the config's seed and adds it to the run name, so ea
 run folder. Test images are never opened here; the final stage does that once, after freezing.
 """
 import argparse
-import importlib.metadata
-import sys
 from pathlib import Path
 
 import pandas as pd
-import torch
 import yaml
 
 from glaucoma_project import COMMON_SPLIT_DIR, PREPARED_ROOT, REPO_ROOT
@@ -26,10 +23,9 @@ from glaucoma_project.image_model.plots import plot_learning_curves, plot_traini
 from glaucoma_project.image_model.predict import predict_rows
 from glaucoma_project.image_model.report import save_report
 from glaucoma_project.image_model.train import fit
-from glaucoma_project.runtime import git_commit, pick_device
+from glaucoma_project.runtime import environment_record, pick_device
 
 RUNS_DIR = REPO_ROOT / "runs" / "image_model"
-PACKAGES = ("torch", "torchvision", "numpy", "pandas", "scikit-learn", "Pillow", "matplotlib")
 
 
 def develop(config: dict, root: Path = PREPARED_ROOT, runs_dir: Path = RUNS_DIR,
@@ -43,10 +39,7 @@ def develop(config: dict, root: Path = PREPARED_ROOT, runs_dir: Path = RUNS_DIR,
     run_dir.mkdir(parents=True)
     write_json(run_dir / "config.json", config)
     device = pick_device()
-    write_json(run_dir / "run.json", {
-        "git_commit": git_commit(), "device": str(device), "cuda": torch.version.cuda,
-        "gpu": torch.cuda.get_device_name() if torch.cuda.is_available() else None,
-        "python": sys.version, "packages": {name: importlib.metadata.version(name) for name in PACKAGES}})
+    write_json(run_dir / "run.json", environment_record(device))
 
     _, summary = audit_export(root)
     check_common_split(root, splits_dir)

@@ -26,9 +26,9 @@ fi
 experiment="${experiments[$((task / 3))]}"
 seed="${seeds[$((task % 3))]}"
 
-python -u indira_experiments/train.py \
+python -u hpc_experiments/train.py \
   --experiment "$experiment" --seed "$seed" \
   --manifest splits/all.csv \
   --artifacts artifacts \
-  --output indira_experiments/runs \
+  --output hpc_experiments/runs \
   --device cuda

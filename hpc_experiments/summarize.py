@@ -6,13 +6,25 @@ from pathlib import Path
 import pandas as pd
 
 
-def summarize(root):
+def summarize(root, selected_runs=None):
+    if selected_runs is not None:
+        if not selected_runs or len(selected_runs)!=len(set(selected_runs)):
+            raise ValueError('Selection must contain unique run directory names')
+        for name in selected_runs:
+            if Path(name).name!=name or not (Path(root)/name/'summary.json').is_file():
+                raise ValueError(f'Invalid or missing selected run: {name}')
     records = []
     for path in sorted(Path(root).glob('*/summary.json')):
+        if selected_runs is not None and path.parent.name not in selected_runs:
+            continue
         entry = json.loads(path.read_text())
         if entry.get('synthetic'):
+            if selected_runs is not None:
+                raise ValueError('Selected run is synthetic')
             continue
         if json.loads((path.parent/'status.json').read_text())['status'] != 'complete':
+            if selected_runs is not None:
+                raise ValueError('Selected run is incomplete')
             continue
         config = entry['config']
         metrics = entry['metrics']
@@ -63,10 +75,15 @@ if __name__ == '__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--runs',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True,
-                        help='New output directory, e.g. indira_experiments/results/meeting_01')
+                        help='New output directory, e.g. hpc_experiments/results/meeting_01')
+    parser.add_argument('--selection-file',type=Path,
+                        help='JSON list of run directory basenames, chosen independently of scores')
     args=parser.parse_args()
-    runs,comparison,paired=summarize(args.runs)
+    selected=json.loads(args.selection_file.read_text()) if args.selection_file else None
+    runs,comparison,paired=summarize(args.runs,selected)
     args.output.mkdir(parents=True,exist_ok=False)
+    if selected is not None:
+        (args.output/'selected_runs.json').write_text(json.dumps(selected,indent=2)+'\n')
     runs.to_csv(args.output/'experiment_log.csv',index=False)
     comparison.to_csv(args.output/'validation_comparison.csv',index=False)
     paired.to_csv(args.output/'paired_seed_differences.csv',index=False)

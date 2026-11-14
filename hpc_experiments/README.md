@@ -1,4 +1,4 @@
-# Indira's main-model experiments
+# HPC main-model experiments
 
 Branch: `anatomy-experiments`. Keep the experiments here until team review; do not merge into main as part of running the sweep.
 
@@ -54,7 +54,7 @@ The historical baseline used a previous runner and emitted nondeterminism warnin
 
 ## Run on the existing HPC setup
 
-Use the existing remote folder `~/projects/glaucoma_cnn_baseline_bundle` with its intact `artifacts/`. Upload both `indira_experiments/` and `splits/` from the supplied run bundle into this root. The experimental runner is self-contained: a small frozen subset of legacy baseline utilities is stored as `indira_experiments/baseline_utils.py`, with its source commit identified. Existing shared project modules are not modified. Create a separate environment `.venv-indira` so experiments do not change the old baseline/team environment.
+Use the existing remote folder `~/projects/glaucoma_cnn_baseline_bundle` with its intact `artifacts/`. Upload both `hpc_experiments/` and `splits/` from the supplied run bundle into this root. The experimental runner is self-contained: a small frozen subset of legacy baseline utilities is stored as `hpc_experiments/baseline_utils.py`, with its source commit identified. Existing shared project modules are not modified. Create a separate environment `.venv-indira` so experiments do not change the old baseline/team environment.
 
 ```bash
 cd ~/projects/glaucoma_cnn_baseline_bundle
@@ -63,9 +63,9 @@ python3 /tmp/indira_virtualenv.pyz .venv-indira
 source .venv-indira/bin/activate
 python -m pip install --upgrade pip
 python -m pip install torch==2.9.1 torchvision==0.24.1 --index-url https://download.pytorch.org/whl/cu126
-python -m pip install -r indira_experiments/requirements.txt
+python -m pip install -r hpc_experiments/requirements.txt
 python -c "from torchvision.models import resnet18, ResNet18_Weights; resnet18(weights=ResNet18_Weights.IMAGENET1K_V1); print('ResNet weights ready')"
-cd indira_experiments
+cd hpc_experiments
 python -m unittest test_experiments.py
 cd ..
 ```
@@ -75,7 +75,7 @@ The artificial checks train short reference/fusion models on generated pixels an
 **Preflight first** (may be run on the login node; it validates development files without training):
 
 ```bash
-python indira_experiments/train.py --experiment E4 --seed 2440 \
+python hpc_experiments/train.py --experiment E4 --seed 2440 \
   --manifest splits/all.csv \
   --artifacts artifacts --check-only
 ```
@@ -86,7 +86,7 @@ This requires real binary `disc_segmentation.png`/`cup_segmentation.png` files r
 
 ```bash
 mkdir -p logs
-sbatch --array=0,3,6%1 indira_experiments/run_array.slurm
+sbatch --array=0,3,6%1 hpc_experiments/run_array.slurm
 ```
 
 Array mapping: 0/1/2 = E0 seeds 2440/2441/2442; 3/4/5 = E3; 6/7/8 = E4; 9/10/11 = E1; 12/13/14 = E2; 15/16/17 = E5. `%1` requests at most one task running at a time. The GPU partition and resource options assume the lab's previously working setup; change only if the lab requires it.
@@ -94,14 +94,14 @@ Array mapping: 0/1/2 = E0 seeds 2440/2441/2442; 3/4/5 = E3; 6/7/8 = E4; 9/10/11 
 If all three runs finish and their outputs are valid, complete the other planned seeds **without choosing them based on first-seed scores**:
 
 ```bash
-sbatch --array=1,2,4,5,7,8%1 indira_experiments/run_array.slurm
+sbatch --array=1,2,4,5,7,8%1 hpc_experiments/run_array.slurm
 ```
 
 Optional secondary experiments, if resources/time permit:
 
 ```bash
 python -c "from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights; efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1); print('EfficientNet weights ready')"
-sbatch --array=9-17%1 indira_experiments/run_array.slurm
+sbatch --array=9-17%1 hpc_experiments/run_array.slurm
 ```
 
 Each submission returns its own job ID. Monitor using `squeue -u "$USER"`; inspect `logs/indira_JOBID_TASKID.out` and `.err` using the real IDs. Do not blindly rerun a completed array; the summary tool rejects multiple real runs for the same experiment and seed to prevent accidental cherry-picking. A failed run retains `failure.txt` and `status.json`; inspect the cause before retrying.
@@ -111,8 +111,8 @@ Each submission returns its own job ID. Monitor using `squeue -u "$USER"`; inspe
 Run after training jobs have ended:
 
 ```bash
-python indira_experiments/summarize.py --runs indira_experiments/runs \
-  --output indira_experiments/results/meeting_01
+python hpc_experiments/summarize.py --runs hpc_experiments/runs \
+  --output hpc_experiments/results/meeting_01
 ```
 
 This writes an experiment log, mean/SD comparison table, and within-seed differences for the specified controlled comparisons. It does not create missing runs or treat a single-seed result as a completed three-seed comparison. Standard deviations across seeds are not confidence intervals for patient performance. Validation estimates are selection-dependent; extensive tuning on 28 positives is a material limitation.

@@ -27,7 +27,7 @@ The split algorithm approximates class balance under group constraints; it does 
 
 ## Execution
 
-The study is stored on HPC under `indira_experiments/runs/split_confirmation_20261115/`. It contains protocol.json, assignments.csv, development.csv and fold_counts.csv. The protocol binds assignment, development-table and training-source hashes; source edits invalidate it.
+The study is stored on HPC under `hpc_experiments/runs/split_confirmation_20261115/`. It contains protocol.json, assignments.csv, development.csv and fold_counts.csv. The protocol binds assignment, development-table and training-source hashes; source edits invalidate it.
 
 Task mapping: `fold = task // 6`, arm E0 for offsets 0–2 and E2 for offsets 3–5, seeds 2440–2442. Pilot task 0 was submitted first to verify training plus outer evaluation. Tasks 1–29 are submitted after pilot success, with bounded concurrency. Do not submit task 0 again.
 
@@ -39,8 +39,8 @@ squeue -u "$USER"
 After all 30 tasks report outer completion:
 
 ```bash
-python indira_experiments/split_confirmation.py summarize \
-  --study indira_experiments/runs/split_confirmation_20261115
+python hpc_experiments/split_confirmation.py summarize \
+  --study hpc_experiments/runs/split_confirmation_20261115
 ```
 
 This produces `comparison/per_seed_fold_metrics.csv`, `ensemble_fold_metrics.csv` and `primary.json`. It refuses incomplete studies and existing comparison output. For each training task, `status.json` records inner training completion only; `outer_completion.json` is required to establish the task completed the outer evaluation. Preserve failed runs and inspect logs before retrying; do not delete completed evidence.

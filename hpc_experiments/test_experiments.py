@@ -134,6 +134,10 @@ class Checks(unittest.TestCase):
             (duplicate/'summary.json').write_text((root/'0/summary.json').read_text())
             (duplicate/'status.json').write_text((root/'0/status.json').read_text())
             with self.assertRaises(ValueError):summarize.summarize(root)
+            selected,_,_=summarize.summarize(root,['0','1','2'])
+            self.assertEqual(len(selected),3)
+            with self.assertRaises(ValueError):summarize.summarize(root,['missing'])
+            with self.assertRaises(ValueError):summarize.summarize(root,['0','0'])
 
 
 if __name__=='__main__':unittest.main()

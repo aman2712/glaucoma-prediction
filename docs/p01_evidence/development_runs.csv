@@ -1,0 +1,11 @@
+arm,seed,epochs_run,best_epoch,validation_auroc,final_train_bce,seconds_per_epoch,gpu,torch,code_commit
+combined,2440,14,8,0.8401,0.0119,3.7,NVIDIA RTX 5000 Ada Generation,2.11.0+cu128,c606261
+combined,2441,16,10,0.8517,0.0033,3.4,NVIDIA RTX 5000 Ada Generation,2.11.0+cu128,c606261
+combined,2442,19,13,0.8468,0.0005,3.4,NVIDIA RTX 5000 Ada Generation,2.11.0+cu128,c606261
+combined,2443,14,8,0.8511,0.0115,3.4,NVIDIA RTX 5000 Ada Generation,2.11.0+cu128,c606261
+combined,2444,14,8,0.8304,0.0067,3.5,NVIDIA RTX 5000 Ada Generation,2.11.0+cu128,c606261
+image_only,2440,14,8,0.8382,0.0118,3.4,NVIDIA RTX 5000 Ada Generation,2.11.0+cu128,c606261
+image_only,2441,16,10,0.848,0.003,3.6,NVIDIA RTX 5000 Ada Generation,2.11.0+cu128,c606261
+image_only,2442,17,11,0.8339,0.0017,3.4,NVIDIA RTX 5000 Ada Generation,2.11.0+cu128,c606261
+image_only,2443,14,8,0.8451,0.0087,3.4,NVIDIA RTX 5000 Ada Generation,2.11.0+cu128,c606261
+image_only,2444,17,11,0.8237,0.0008,3.4,NVIDIA RTX 5000 Ada Generation,2.11.0+cu128,c606261

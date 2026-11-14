@@ -22,7 +22,7 @@ Test AUC of the seed-averaged scores, with 95% intervals (patient-group bootstra
 | Measurements only (Baseline A, same images) | 0.943 | 0.731 |
 | Combined minus measurements-only | -0.129 (-0.197 to -0.059) | +0.039 (-0.033 to +0.111) |
 
-Source: `docs/p01_evidence/` (`primary.csv`, `secondary.csv`, `per_seed.csv`, `arm_metrics.csv`, `no_disc.csv`).
+Source: `docs/p01_evidence/` (`primary.csv`, `secondary.csv`, `per_seed.csv`, `arm_metrics.csv`, `no_disc.csv`, `development_runs.csv`). The notebook `notebooks/05_combined_model.ipynb` reads these tables, shows the frozen record and draws the figures; it needs no patient data.
 
 - **The pre-registered question is answered "not shown".** Both intervals include 0. The combined arm is ahead in 4 of 5 seeds on each test set, but the spread across seeds (up to 0.02) is larger than the average difference.
 - **On CHAKSU the photograph adds nothing to the measurements, and costs a lot.** Three ratios in a logistic regression (0.943) beat both CNN arms (0.81) by about 0.13, a difference whose interval excludes 0. CHAKSU labels follow cup size closely, so this favours the ratios.

@@ -58,7 +58,7 @@ Needs Python 3.11 or newer. Step 2 needs the datasets, which are not in the repo
    python -m glaucoma_project.image_model.develop
    python -m glaucoma_project.image_model.final --run-dir runs/image_model/resnet18   # freeze + one-shot test evaluation
    ```
-5. **Combined study (P01)**: ratios for every image, 10 trainings (2 arms x 5 seeds), freeze, one-shot scoring, analysis. The commands, including the job script for the university GPU cluster, are in [`hpc/README.md`](hpc/README.md) and the design is in [`docs/experiment_log.md`](docs/experiment_log.md).
+5. **Combined study (P01)**: ratios for every image, 10 trainings (2 arms x 5 seeds), freeze, one-shot scoring, analysis. The commands, including the job script for the university GPU cluster, are in [`hpc/README.md`](hpc/README.md) the design is in [`docs/experiment_log.md`](docs/experiment_log.md), and `notebooks/05_combined_model.ipynb` shows the results from the saved tables.
 
 Every run writes its configuration, git commit and metrics to its own folder under `runs/`. Test sets are evaluated once, after the model and threshold are frozen; the code refuses a second evaluation.
 

@@ -1,0 +1,4 @@
+/runs/
+/smoke_outputs/
+__pycache__/
+*.pyc

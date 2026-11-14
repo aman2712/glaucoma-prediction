@@ -1,0 +1,20 @@
+{
+  "protocol_version": "1.0",
+  "seeds": [2440, 2441, 2442],
+  "primary_selection": "mean validation AUROC across the same three seeds; mean AP breaks ties",
+  "base": {
+    "batch_size": 16, "epochs": 25, "warmup_epochs": 2, "patience": 6,
+    "head_lr": 0.0001, "backbone_lr": 0.00001, "weight_decay": 0.0001,
+    "target_sensitivity": 0.9, "anatomy_weight": 0.5,
+    "model_name": "resnet18", "auxiliary": false, "fusion": false,
+    "partial": false, "strong_colour": false
+  },
+  "experiments": {
+    "E0": {"name": "matched_image_reference", "hypothesis": "Establish the image-only reference under the new runner.", "changes": {}},
+    "E1": {"name": "partial_finetuning", "hypothesis": "Fine-tuning only layer4 reduces overfitting.", "changes": {"partial": true}},
+    "E2": {"name": "efficientnet_b0", "hypothesis": "An alternative compact backbone improves development discrimination.", "changes": {"model_name": "efficientnet_b0"}},
+    "E3": {"name": "auxiliary_anatomy", "hypothesis": "Training image features to predict CDRs improves classification.", "changes": {"auxiliary": true}},
+    "E4": {"name": "predicted_anatomy_fusion", "hypothesis": "Adding predicted CDRs to the classifier improves on auxiliary supervision alone.", "changes": {"auxiliary": true, "fusion": true}},
+    "E5": {"name": "fusion_colour_robustness", "hypothesis": "Stronger source-only photometric augmentation improves validation camera robustness.", "changes": {"auxiliary": true, "fusion": true, "strong_colour": true}}
+  }
+}

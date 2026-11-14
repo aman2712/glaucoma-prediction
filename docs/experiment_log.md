@@ -33,7 +33,7 @@ Hypotheses are fixed here before any run. Each needs the team's agreement on the
 |---|---|---|---|---|---|
 | P00 | decision | One common split for all models makes the comparison fair. | The effective split (Baseline B's) becomes the split of record in `splits/`. Baseline A is re-run on it (E10). | Same image IDs and hashes for every model. | Done (E10, E11) |
 | P01 | experiment | Adding the automatically measured cup-to-disc ratios to the photograph as model input improves glaucoma prediction over the photograph alone (the project question). | Same CNN and recipe trained with and without the three ratios, 5 seeds each; full design in "P01 design" below. | AUC difference, combined minus image-only, paired bootstrap over patient groups, each test set separately. Called an improvement only if the 95% interval excludes 0. | Done (E13) |
-| P01b | experiment | The two-step blend, pre-registered in "P01 design" as a secondary comparison and now motivated by E13: image scores that were never fitted on their own images, plus the three ratios, improve on the image score alone. | As in "P01 design": 5 grouped folds of the development data, fixed epoch count from the validation-only development run, 5 seeds, logistic regression on the image score and the three ratios. Test sets used once after freezing, on a new freeze. | Same rule as P01: paired grouped bootstrap AUC difference, interval must exclude 0, each test set separately. | Proposed |
+| P01b | experiment | The two-step blend, pre-registered in "P01 design" as a secondary comparison and now motivated by E13: image scores that were never fitted on their own images, plus the three ratios, improve on the image score alone. | As in "P01 design": 5 grouped folds of the development data, fixed epoch count from the validation-only development run, 5 seeds, logistic regression on the image score and the three ratios. Test sets used once after freezing, on a new freeze. | Same rule as P01: paired grouped bootstrap AUC difference, interval must exclude 0, each test set separately. | Design fixed 2026-11-14; not yet run |
 | P02 | experiment | Segmentation error limits the combined model. | Combined model with predicted vs expert masks. | AUC gap on both test sets; the gap measures the cost of segmentation error. | Proposed |
 | P03 | experiment | One principled correction reduces the PAPILA drop without using PAPILA labels for tuning. | Choose one before looking (for example recalibrating the threshold, or stronger photometric augmentation of the segmentation model) using a CHAKSU-only development subset. | PAPILA AUC and sensitivity at the frozen rule, before vs after; reported even if it does not help. This is also the bonus mitigation. | Proposed |
 
@@ -67,3 +67,33 @@ Fixed before any P01 model is trained. Changing any item below after seeing a P0
 - The image-only arm is a new run, not the E07 checkpoint, which is kept as the earlier reference.
 
 **Freeze.** Configs, code commit, split and measurement files are recorded with SHA-256 before the test sets are opened, using the same mechanism as Baseline A.
+
+## P01b design
+
+Fixed on 2026-11-14, before any P01b model is trained. The experiment was pre-registered as a secondary comparison of P01 and is run now because P01 did not show an improvement (E13) and the likely reason is that the network fitted the training labels from the photograph alone. The test sets were already used by earlier experiments, so P01b is exploratory evidence on them. Changing any item below after seeing a P01b result makes the result post-hoc.
+
+**Question.** Do the three predicted cup-to-disc ratios improve an image score that was never fitted on its own images?
+
+**Data.** Development images are the classification train and validation images of `splits/all.csv` (1,008). The CHAKSU test set and PAPILA are scored once, after freezing.
+
+**Image model.** The P01 image-only recipe (`configs/p01_image_only.yaml`: ResNet-18, ImageNet start, batch 16, head learning rate 1e-4, backbone 1e-5, colour jitter). Training length is fixed at **10 epochs** (2 head-only, then 8 of fine-tuning), the median best epoch of the five P01 image-only runs (8, 10, 11, 8, 11; validation only). There is no early stopping and the last epoch is used.
+
+**Cross-fitting.** The development images are split into 5 folds that keep every `analysis_group` together and balance the labels (the Baseline A routine `grouped_folds`, fold seed 2440). For each of the 5 seeds (2440 to 2444), 5 networks are trained, each on 4 folds, and each scores the fold it did not see. That gives 25 checkpoints. The **out-of-fold image score** of a development image is the mean logit over the 5 seeds of the network that never saw it.
+
+**Test image score.** The mean logit over all 25 networks.
+
+**Blend.** The Baseline A classifier (median fill, standardise, logistic regression with balanced class weights) on four inputs: the image score and the three ratios from the same predicted-ratio file as P01 (`runs/p01/measurements.csv`). The regularisation strength C comes from the Baseline A grid (0.001 to 100) by grouped 5-fold cross-validated AUC on the development images (fold seed 2440). The final blend is fitted on all 1,008 development images.
+
+**Primary comparison.** AUC of the blend minus AUC of the image score alone, on CHAKSU test and PAPILA separately, never pooled. Paired bootstrap over whole `analysis_group`s, 2,000 resamples, 95% interval (the P01 routine). An improvement is claimed only if the interval excludes 0.
+
+**Secondary comparisons.**
+- Blend against measurements-only (frozen Baseline A) on the images they share.
+- Development diagnostic, before freezing and not a decision rule: out-of-fold AUC of the image score alone against the cross-validated AUC of the blend on the development images.
+
+**Stated caveats.**
+- Development image scores come from single networks trained on 80% of the data, while test image scores average 25 networks. The two have different spread, which can shift the blend's weights. This is usual in stacking and is not corrected.
+- CHAKSU labels follow CDR closely, so a CHAKSU gain may be circular; PAPILA is the more informative test.
+- The ratios of development images come from a U-Net that was trained on them (as in P01).
+- With 50 CHAKSU and 85 PAPILA test positives only fairly large differences are detectable.
+
+**Freeze.** All 25 checkpoints, the fitted blend, the measurements file and the split file are recorded with SHA-256 and the code version before the test sets are opened. Scoring refuses to run twice.

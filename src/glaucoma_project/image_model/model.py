@@ -1,6 +1,7 @@
 """CNN architectures with a single-logit head, and checkpoint loading."""
 from pathlib import Path
 
+import timm
 import torch
 from torch import nn
 from torchvision import models
@@ -10,6 +11,10 @@ ARCHITECTURES = {
     "resnet50": (models.resnet50, models.ResNet50_Weights.IMAGENET1K_V2),
     "efficientnet_b0": (models.efficientnet_b0, models.EfficientNet_B0_Weights.IMAGENET1K_V1),
 }
+DINOV2 = "dinov2_vitb14"
+DINOV2_WEIGHTS = "vit_base_patch14_dinov2.lvd142m"   # public DINOv2 weights (natural images, no retinal pretraining)
+ARCHITECTURES[DINOV2] = (None, DINOV2_WEIGHTS)
+INPUT_SIZE = 224
 UNTRAINED = "NONE_TEST_ONLY"
 
 
@@ -35,6 +40,11 @@ def build_model(name: str, pretrained: bool = True, n_measurements: int = 0) -> 
     if name not in ARCHITECTURES:
         raise ValueError(f"Unknown architecture {name!r}; choose from {sorted(ARCHITECTURES)}")
     builder, weights = ARCHITECTURES[name]
+    if name == DINOV2:
+        if n_measurements:
+            raise ValueError("Measurements can only be added to a ResNet")
+        model = timm.create_model(DINOV2_WEIGHTS, pretrained=pretrained, num_classes=1, img_size=INPUT_SIZE)
+        return model, DINOV2_WEIGHTS if pretrained else UNTRAINED
     model = builder(weights=weights if pretrained else None)
     if n_measurements:
         if not isinstance(model, models.ResNet):
@@ -49,7 +59,7 @@ def build_model(name: str, pretrained: bool = True, n_measurements: int = 0) -> 
 
 def head_parameters(model: nn.Module) -> list[nn.Parameter]:
     """Parameters of the classification head; all others belong to the pretrained backbone."""
-    if isinstance(model, ResNetWithMeasurements):
+    if isinstance(model, ResNetWithMeasurements) or isinstance(model, timm.models.VisionTransformer):
         head = model.head
     else:
         head = model.fc if isinstance(model, models.ResNet) else model.classifier

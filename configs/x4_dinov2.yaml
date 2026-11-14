@@ -1,0 +1,15 @@
+# X4 variant: a DINOv2 ViT-B/14 backbone in place of the ImageNet ResNet-18; otherwise the P01 recipe.
+run_name: x4_dinov2
+model_name: dinov2_vitb14
+pretrained: true
+seed: 2440                  # overridden per run
+batch_size: 16
+epochs: 25
+warmup_epochs: 2            # head-only: the linear-probe stage (its validation AUROC is descriptive)
+patience: 6
+head_lr: 0.001
+backbone_lr: 0.00001
+weight_decay: 0.0001
+augment: true
+target_sensitivity: 0.9
+n_bootstrap: 1000

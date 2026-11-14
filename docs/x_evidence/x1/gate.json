@@ -1,0 +1,23 @@
+{
+  "raw": {
+    "auc": 0.957581069237511,
+    "sensitivity": 0.8857142857142857,
+    "specificity": 0.8343558282208589,
+    "sensitivity_at_95_specificity": 0.8571428571428571,
+    "auprc": 0.8726500626789173,
+    "balanced_accuracy": 0.8600350569675723,
+    "n_images": 198,
+    "n_positives": 35
+  },
+  "standardised": {
+    "auc": 0.9591586327782646,
+    "sensitivity": 0.9428571428571428,
+    "specificity": 0.8220858895705522,
+    "sensitivity_at_95_specificity": 0.8285714285714286,
+    "auprc": 0.8865533706709378,
+    "balanced_accuracy": 0.8824715162138475,
+    "n_images": 198,
+    "n_positives": 35
+  },
+  "passes": true
+}

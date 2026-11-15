@@ -32,22 +32,14 @@ def validate(model, loader, device) -> dict:
     return {"val_dice_disc": scores[0].item(), "val_dice_cup": scores[1].item()}
 
 
-def train(config: dict, config_path: Path) -> Path:
-    set_seed(config["seed"])
-    device = pick_device()
-    run_dir = RUNS_DIR / config["run_name"]
-    run_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy(config_path, run_dir / "config.yaml")
-    (run_dir / "run.json").write_text(json.dumps({"git_commit": git_commit(), "device": str(device)}))
-
-    train_loader = make_loader("train", config["batch_size"], num_workers=config["num_workers"])
-    val_loader = make_loader("validation", config["batch_size"], num_workers=config["num_workers"])
-    model = DiscCupUNet(config["encoder"], config["pretrained"]).to(device)
+def fit(model: DiscCupUNet, train_loader, val_loader, run_dir: Path, config: dict,
+        device: torch.device) -> pd.DataFrame:
+    """Train for ``config["epochs"]``; write ``history.csv`` every epoch and ``best.pt`` (the weights of the
+    epoch with the best mean validation Dice of disc and cup). Returns the history."""
     loss_fn = DiceBCELoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=config["learning_rate"],
                                   weight_decay=config["weight_decay"])
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config["epochs"])
-
     history, best = [], -1.0
     for epoch in range(1, config["epochs"] + 1):
         start = time.time()
@@ -70,6 +62,22 @@ def train(config: dict, config_path: Path) -> Path:
             best = mean_dice
             torch.save(model.state_dict(), run_dir / "best.pt")
         print(row, flush=True)
+    return pd.DataFrame(history)
+
+
+def train(config: dict, config_path: Path) -> Path:
+    set_seed(config["seed"])
+    device = pick_device()
+    run_dir = RUNS_DIR / config["run_name"]
+    run_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy(config_path, run_dir / "config.yaml")
+    (run_dir / "run.json").write_text(json.dumps({"git_commit": git_commit(), "device": str(device)}))
+
+    profile = config.get("augment_profile", "standard")
+    train_loader = make_loader("train", config["batch_size"], num_workers=config["num_workers"], profile=profile)
+    val_loader = make_loader("validation", config["batch_size"], num_workers=config["num_workers"])
+    model = DiscCupUNet(config["encoder"], config["pretrained"]).to(device)
+    fit(model, train_loader, val_loader, run_dir, config, device)
     return run_dir
 
 

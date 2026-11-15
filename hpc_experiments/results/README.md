@@ -1,5 +1,7 @@
 # Main result: EfficientNet-B0 versus ResNet-18
 
+**Held-out evaluation is now complete:** [test comparison](efficientnet_heldout_20261115/README.md). E2's development advantage did not establish superiority on either held-out cohort against matched E0; PAPILA AUROC was slightly lower. Read the development findings below together with that result.
+
 The strongest completed experiment is the grouped development cross-validation study confirming the architecture comparison. The six-experiment screening study identified EfficientNet-B0 (E2) as the leading candidate; the subsequent grouped study checked whether that advantage persisted under different development splits.
 
 ## Six-experiment screening

@@ -4,6 +4,8 @@ Branch: `anatomy-experiments`. Keep the experiments here until team review; do n
 
 The objective is to test whether anatomical supervision and predicted cup-to-disc ratios improve the image-only reference. All six configurations have now been evaluated over three seeds, and a subsequent five-fold grouped E0/E2 study completed all 30 fits. **EfficientNet-B0 is the leading development candidate:** mean outer-fold ensemble AUROC 0.8681 versus 0.8379 for ResNet-18; paired difference +0.0302 (95% grouped-bootstrap interval +0.0063 to +0.0534). This is post-selection development evidence, not independent external validation. See [completed findings and evidence](results/README.md).
 
+**Held-out update:** E2 achieved AUROC 0.8418 on CHAKSU and 0.7268 on PAPILA. Matched E2–E0 difference intervals include zero on both cohorts; no external improvement was demonstrated. See the [held-out comparison and limitations](results/efficientnet_heldout_20261115/README.md). The development result must not be presented as proof of external superiority.
+
 Starting point: current main commit `194a005`. The team's completed P01 (`docs/combined_model.md`) concatenated ratios from the frozen U-Net with CNN features and did not establish an improvement. This new study instead supervises an image-derived CDR regression head jointly with classification, then ablates fusion. It is not a repeat of P01 or a claim that P01 succeeded. The hypotheses below are fixed before these new runs, after prior P01/test outcomes have been observed.
 
 ## Main architecture

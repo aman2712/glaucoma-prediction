@@ -1,0 +1,11 @@
+# X6 variant: U-Net(ResNet-34) with a glaucoma head, trained with the joint loss on 512 px photographs.
+run_name: x6_multitask
+encoder: resnet34
+pretrained: true
+epochs: 30
+batch_size: 8
+learning_rate: 0.0003
+weight_decay: 0.0001
+num_workers: 0
+seed: 2440
+augment_profile: standard

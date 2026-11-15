@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -8,7 +9,8 @@ import torch
 from glaucoma_project.combined_model import ratio_blend_study as rb
 from glaucoma_project.data.common_split import load_common_split
 from glaucoma_project.freeze import sha256_file
-from glaucoma_project.measurements.classification_inputs import adapted_measurements
+from glaucoma_project import REPO_ROOT
+from glaucoma_project.measurements.classification_inputs import adapted_measurements, repo_relative
 
 from test_robust_final import StubNet, rows_with_labels
 from test_robust_segmentation import SIZE
@@ -97,3 +99,9 @@ def test_the_analysis_compares_the_blend_with_every_reference_on_the_shared_imag
     assert set(secondary.comparison) == {"x9 blend minus image score", "x9 blend minus p01b blend",
                                          "x9 blend minus baseline a"}
     assert {"difference", "ci_low", "ci_high", "auc_a", "auc_b"} <= set(primary.columns) and (primary.n > 0).all()
+
+
+def test_a_manifest_path_is_recorded_relative_to_the_repository_whether_given_relative_or_absolute(monkeypatch):
+    monkeypatch.chdir(REPO_ROOT)
+    assert repo_relative(Path("docs/frozen_x5.json")) == "docs/frozen_x5.json"
+    assert repo_relative(REPO_ROOT / "docs" / "frozen_x5.json") == "docs/frozen_x5.json"

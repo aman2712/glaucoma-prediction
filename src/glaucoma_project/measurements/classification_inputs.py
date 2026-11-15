@@ -37,6 +37,11 @@ def predicted_measurements(rows: pd.DataFrame, model, root: Path = PREPARED_ROOT
     return pd.DataFrame(records, columns=["image_id", *RATIOS])
 
 
+def repo_relative(path: Path) -> str:
+    """``path`` as written in a record, relative to the repository (whether given relative or absolute)."""
+    return str(Path(path).resolve().relative_to(REPO_ROOT))
+
+
 def adapted_measurements(rows: pd.DataFrame, model, root: Path, device: torch.device, batch_size: int = 8) -> pd.DataFrame:
     """The three ratios of every row, after the model's batch-norm statistics are re-estimated on these rows'
     photographs (no label or mask is read). The model passed in is not modified."""
@@ -65,7 +70,7 @@ def write_measurements(out: Path, manifest: Path = BASELINE_MANIFEST, root: Path
     table.to_csv(out, index=False)
     write_json(out.with_suffix(".json"), {
         "segmentation_weights_sha256": record["files"]["segmentation_weights"]["sha256"],
-        "baseline_manifest": str(manifest.relative_to(REPO_ROOT)), "csv_sha256": sha256_file(out),
+        "baseline_manifest": repo_relative(manifest), "csv_sha256": sha256_file(out),
         "adapted_batch_norm": adapt, "images": len(table), "no_disc_found": int(table.vcdr.isna().sum()),
         "images_per_split": table.split.value_counts().to_dict()})
     return table

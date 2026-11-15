@@ -34,6 +34,31 @@ def _improves(auroc: float, loss: float, best: tuple[float, float]) -> bool:
     return auroc > best_auroc + TIE_TOLERANCE or (abs(auroc - best_auroc) <= TIE_TOLERANCE and loss < best_loss)
 
 
+def _is_head_only(epoch: int, config: dict) -> bool:
+    return epoch <= config["warmup_epochs"]
+
+
+def train_for_epochs(train_rows: pd.DataFrame, root: Path, config: dict, device: torch.device,
+                     epochs: int) -> torch.nn.Module:
+    """Train for exactly ``epochs`` epochs (head-only warm-up, then fine-tuning) and return the last model.
+
+    There is no validation, no early stopping and no checkpoint choice, so every image of
+    ``train_rows`` is used and nothing else is looked at. This is what cross-fitting needs.
+    """
+    if epochs <= config["warmup_epochs"]:
+        raise ValueError("epochs must exceed warmup_epochs so that the backbone is fine-tuned")
+    set_seed(config["seed"], deterministic=True)
+    model, _ = build_model(config["model_name"], config["pretrained"],
+                           n_measurements=len(config.get("measurement_columns", [])))
+    model.to(device)
+    loader = make_loader(train_rows, root, config, training=True)
+    for epoch in range(1, epochs + 1):
+        if epoch in (1, config["warmup_epochs"] + 1):
+            optimizer = _optimizer(model, _is_head_only(epoch, config), config)
+        run_epoch(model, loader, device, optimizer, _is_head_only(epoch, config))
+    return model
+
+
 def fit(train_rows: pd.DataFrame, val_rows: pd.DataFrame, root: Path, run_dir: Path, config: dict,
         device: torch.device, measurement_scaler: dict | None = None) -> tuple[torch.nn.Module, dict, pd.DataFrame]:
     """Train and return the best fine-tuned model, its checkpoint dict and the epoch history.

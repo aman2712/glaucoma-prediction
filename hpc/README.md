@@ -24,3 +24,12 @@ when finished.
    Commit `docs/frozen_p01.json`; it records the commit, the checkpoint hashes and the inputs.
 
 All 10 runs use the same GPU type. Each run folder records its commit, library versions and GPU in `run.json`.
+
+## P01b runs
+Same environment and data as P01. The design is in `docs/experiment_log.md` ("P01b design").
+1. `sbatch hpc/p01b_train.sbatch` trains 5 seeds x 5 fold networks (25 in all) and scores each network's held-out fold.
+2. When all 5 tasks are done: `python -m glaucoma_project.combined_model.blend_study fit` (CPU) chooses C and fits the blend on development data. It prints the development diagnostic.
+3. Commit the code, then `python -m glaucoma_project.combined_model.blend_study freeze`.
+4. `python -m glaucoma_project.combined_model.blend_study score --out runs/p01b/final` (GPU, once), then
+   `python -m glaucoma_project.combined_model.blend_study analyse --scores runs/p01b/final --out runs/p01b/analysis`.
+   Commit `docs/frozen_p01b.json` and the analysis tables.

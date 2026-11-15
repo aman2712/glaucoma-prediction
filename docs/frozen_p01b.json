@@ -1,0 +1,168 @@
+{
+  "git_commit": "31fd3c83b7778fa58d33b3cf8b86d2ce58e0ac57",
+  "code_paths": [
+    "src/glaucoma_project/combined_model/blend_study.py",
+    "src/glaucoma_project/combined_model/blend.py",
+    "src/glaucoma_project/combined_model/crossfit.py",
+    "src/glaucoma_project/combined_model/analysis.py",
+    "src/glaucoma_project/image_model",
+    "src/glaucoma_project/classification",
+    "src/glaucoma_project/data",
+    "src/glaucoma_project/evaluation",
+    "src/glaucoma_project/runtime.py",
+    "src/glaucoma_project/files.py",
+    "src/glaucoma_project/freeze.py",
+    "configs/p01b.yaml"
+  ],
+  "files": {
+    "seed2440_fold0": {
+      "path": "runs/p01b/seed2440/fold0.pt",
+      "sha256": "8f7f5eef0a475ac5cc4ab28ce0e614236c6e91e25ee31f86034d2bb69cb4a6c7"
+    },
+    "seed2440_fold1": {
+      "path": "runs/p01b/seed2440/fold1.pt",
+      "sha256": "8bae2722b49edb64d6a73223ab781abf48fd4893da53e043b6ef83fc5c467149"
+    },
+    "seed2440_fold2": {
+      "path": "runs/p01b/seed2440/fold2.pt",
+      "sha256": "2ac7a594bf4227879b1f2af5b27d130a52ae175c67798c652ce9e150b18e6c6d"
+    },
+    "seed2440_fold3": {
+      "path": "runs/p01b/seed2440/fold3.pt",
+      "sha256": "a8919b01be29a36c9c1081e8b8a99e2efb5de571bd20da4403c7cd140881793b"
+    },
+    "seed2440_fold4": {
+      "path": "runs/p01b/seed2440/fold4.pt",
+      "sha256": "b2cad3f24a0b34192986081871547fc02977dba0e1a0a1149fc8e4ac78b34235"
+    },
+    "seed2441_fold0": {
+      "path": "runs/p01b/seed2441/fold0.pt",
+      "sha256": "ad7d05f884be60afec4a7d6473f622883374691012dd2f144a7f54ddb54cdf28"
+    },
+    "seed2441_fold1": {
+      "path": "runs/p01b/seed2441/fold1.pt",
+      "sha256": "830cd9d56de7337809dc678c13caa756addbb2d3315cf1b5c29ff24bee80deb9"
+    },
+    "seed2441_fold2": {
+      "path": "runs/p01b/seed2441/fold2.pt",
+      "sha256": "af7fa8a7c90051594542231e0df845d25ded715677d224d6625abdd4a6ca349d"
+    },
+    "seed2441_fold3": {
+      "path": "runs/p01b/seed2441/fold3.pt",
+      "sha256": "046ffa15be660f30c97f196b74417a2f30b5ba4deb469e496f51ad3bc984b99b"
+    },
+    "seed2441_fold4": {
+      "path": "runs/p01b/seed2441/fold4.pt",
+      "sha256": "01231417ddc52bcffbe064f678862b51d3b5fb4b68d84d453904ce25b94a2f0a"
+    },
+    "seed2442_fold0": {
+      "path": "runs/p01b/seed2442/fold0.pt",
+      "sha256": "e67c381870641066644a2fb17bcf309b4cff3fdaa34846d71f70ee7855a37e5d"
+    },
+    "seed2442_fold1": {
+      "path": "runs/p01b/seed2442/fold1.pt",
+      "sha256": "cc6d441a43c7403a3fa745b94be524466e8056684aeb0c47531ee547944c6584"
+    },
+    "seed2442_fold2": {
+      "path": "runs/p01b/seed2442/fold2.pt",
+      "sha256": "0f105676e32282fd4e197dd779b4c28991090b5874f12756cc72e60a8e6bd82e"
+    },
+    "seed2442_fold3": {
+      "path": "runs/p01b/seed2442/fold3.pt",
+      "sha256": "af49491c74ce3c5311c1a4bae76e746c854ac36cfc884215a416a2d0dc8a90e5"
+    },
+    "seed2442_fold4": {
+      "path": "runs/p01b/seed2442/fold4.pt",
+      "sha256": "c08d5908150cd1ee37e6a1b29e735f7725c34b5024fb0f2b626d3f754658d4a6"
+    },
+    "seed2443_fold0": {
+      "path": "runs/p01b/seed2443/fold0.pt",
+      "sha256": "1917c0e1f83fc31c6912fac93c413e6521e716cb693071eb67f1f57483af4a4f"
+    },
+    "seed2443_fold1": {
+      "path": "runs/p01b/seed2443/fold1.pt",
+      "sha256": "f6db97d19c3b37be88df57cf2a7358e0a32324e72d93f1f38ed3ff3a8396b668"
+    },
+    "seed2443_fold2": {
+      "path": "runs/p01b/seed2443/fold2.pt",
+      "sha256": "a3b49d2c1100ecce0071259346fb99caef393868c5144a47acd771999608f2ba"
+    },
+    "seed2443_fold3": {
+      "path": "runs/p01b/seed2443/fold3.pt",
+      "sha256": "ea708fb581f9377d467a325b0fe82a522a9c160f96e61c61a38b0be94ee711e6"
+    },
+    "seed2443_fold4": {
+      "path": "runs/p01b/seed2443/fold4.pt",
+      "sha256": "ad396aa51679161f51bf66f517b38c005f4298265b24109915cd4d91af0eee60"
+    },
+    "seed2444_fold0": {
+      "path": "runs/p01b/seed2444/fold0.pt",
+      "sha256": "7f71c560c4747bb4a6faccd3769e0da3e15a9fa9dc5a338384a596e1d8a06541"
+    },
+    "seed2444_fold1": {
+      "path": "runs/p01b/seed2444/fold1.pt",
+      "sha256": "832c09a567078684f78a4dde0b1becee68c8c22936ffc02a45f22b2abfb5f99f"
+    },
+    "seed2444_fold2": {
+      "path": "runs/p01b/seed2444/fold2.pt",
+      "sha256": "60cd121711669d5653afaf4810647ab4fc0f4f680758796111aad46675f782f0"
+    },
+    "seed2444_fold3": {
+      "path": "runs/p01b/seed2444/fold3.pt",
+      "sha256": "a5705e1509bcee29c0ca32cacd8b59e05609f6ca693f853fb7862b1a86dae791"
+    },
+    "seed2444_fold4": {
+      "path": "runs/p01b/seed2444/fold4.pt",
+      "sha256": "d2f7639f860d1236ce8e7abedfae3b8e8dfc09449d6631d2682e79a6013e38d0"
+    },
+    "blend": {
+      "path": "runs/p01b/blend.joblib",
+      "sha256": "fc3fbbc51add363cf1d38ba06402c132d62b31d16fcac45e163261a904d5de9f"
+    },
+    "measurements": {
+      "path": "runs/p01/measurements.csv",
+      "sha256": "3f0466e2ddc906996c6b41aa7962f884aa00a976fe189f26969d4d30998850c5"
+    },
+    "common_split": {
+      "path": "splits/all.csv",
+      "sha256": "4590df4ee6e6ce8ed722786cdb49220b632468184222fb9760c396e5cbf37094"
+    }
+  },
+  "settings": {
+    "study": {
+      "recipe": {
+        "model_name": "resnet18",
+        "pretrained": true,
+        "batch_size": 16,
+        "warmup_epochs": 2,
+        "head_lr": 0.0001,
+        "backbone_lr": 1e-05,
+        "weight_decay": 0.0001,
+        "augment": true
+      },
+      "epochs": 10,
+      "n_folds": 5,
+      "fold_seed": 2440,
+      "seeds": [
+        2440,
+        2441,
+        2442,
+        2443,
+        2444
+      ],
+      "c_grid": [
+        0.001,
+        0.01,
+        0.1,
+        1,
+        10,
+        100
+      ],
+      "runs_dir": "runs/p01b",
+      "measurements": "runs/p01/measurements.csv",
+      "baseline_a_scores": "runs/final/common_split/scores.csv",
+      "n_bootstrap": 2000,
+      "bootstrap_seed": 2440
+    }
+  }
+}

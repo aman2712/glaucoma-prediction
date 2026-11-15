@@ -1,0 +1,96 @@
+{
+  "git_commit": "9babc7ea8bf2638260f876ce0517d01ae3bff142",
+  "code_paths": [
+    "src/glaucoma_project/combined_model/ratio_blend_study.py",
+    "src/glaucoma_project/combined_model/blend_study.py",
+    "src/glaucoma_project/combined_model/blend.py",
+    "src/glaucoma_project/combined_model/analysis.py",
+    "src/glaucoma_project/classification",
+    "src/glaucoma_project/evaluation",
+    "src/glaucoma_project/files.py",
+    "src/glaucoma_project/freeze.py",
+    "configs/x7.yaml"
+  ],
+  "files": {
+    "blend": {
+      "path": "runs/x7/blend.joblib",
+      "sha256": "2d65002d08265277e3b3bf52b6d78e503d5830070e6024a939253b77f9f70c34"
+    },
+    "measurements": {
+      "path": "runs/x5/measurements.csv",
+      "sha256": "e26b24f9f76018068f78554fc49d9a27862eacd56f90db4bce5bcb9b0fd45333"
+    },
+    "common_split": {
+      "path": "splits/all.csv",
+      "sha256": "4590df4ee6e6ce8ed722786cdb49220b632468184222fb9760c396e5cbf37094"
+    },
+    "oof_seed2440": {
+      "path": "runs/p01b/seed2440/oof_logits.csv",
+      "sha256": "c6faa475491cc289378ea071917ec8f5a83396c53d69905f06fc8dd468691f94"
+    },
+    "oof_seed2441": {
+      "path": "runs/p01b/seed2441/oof_logits.csv",
+      "sha256": "1a391a8fd40fd6dfa7e0cb7f2e673b0d22e681b3d3ad624b28c43423c4870b0e"
+    },
+    "oof_seed2442": {
+      "path": "runs/p01b/seed2442/oof_logits.csv",
+      "sha256": "15c052252972cb2873edda840e3aa22ef7a05ecf695183207041f41854345e27"
+    },
+    "oof_seed2443": {
+      "path": "runs/p01b/seed2443/oof_logits.csv",
+      "sha256": "e38da3ce89cff8d8dbb7b53aff22e3945b73640ee15e67645b4b3decab6a2ac7"
+    },
+    "oof_seed2444": {
+      "path": "runs/p01b/seed2444/oof_logits.csv",
+      "sha256": "6f61eae5914bc01b68cef5ab6ed62139e9ed3578f31406f3387a98cbabfa0692"
+    },
+    "image_scores_in_domain_test": {
+      "path": "runs/p01b/final/in_domain_test.csv",
+      "sha256": "a1d9f33dc9c186408807590757136c9a9266f52656d754328da8c2a135c928c0"
+    },
+    "image_scores_external_test": {
+      "path": "runs/p01b/final/external_test.csv",
+      "sha256": "648ba520b6a1cc33ab21e229228f7d9ad9fc08da3ed9f2efbafea7bdbeef2214"
+    },
+    "reference_x5 measurements only": {
+      "path": "runs/x5/test/scores.csv",
+      "sha256": "99fe7dbd64945f8a7a5984e3c6f19832e0a4691437a3f6d1182fa0917658a446"
+    },
+    "reference_baseline a": {
+      "path": "runs/final/common_split/scores.csv",
+      "sha256": "a70ec387b95a133a85f136564576460da142fd81dfeca786a727cba0dc8976df"
+    }
+  },
+  "settings": {
+    "study": {
+      "name": "x7",
+      "runs_dir": "runs/x7",
+      "image_runs_dir": "runs/p01b",
+      "image_scores": "runs/p01b/final",
+      "measurements": "runs/x5/measurements.csv",
+      "references": {
+        "x5 measurements only": "runs/x5/test/scores.csv",
+        "baseline a": "runs/final/common_split/scores.csv"
+      },
+      "n_folds": 5,
+      "fold_seed": 2440,
+      "seeds": [
+        2440,
+        2441,
+        2442,
+        2443,
+        2444
+      ],
+      "c_grid": [
+        0.001,
+        0.01,
+        0.1,
+        1,
+        10,
+        100
+      ],
+      "n_bootstrap": 2000,
+      "bootstrap_seed": 2440
+    }
+  }
+}

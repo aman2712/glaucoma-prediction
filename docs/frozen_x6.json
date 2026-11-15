@@ -1,0 +1,68 @@
+{
+  "git_commit": "9babc7ea8bf2638260f876ce0517d01ae3bff142",
+  "code_paths": [
+    "src/glaucoma_project/combined_model/multitask_study.py",
+    "src/glaucoma_project/combined_model/variant_study.py",
+    "src/glaucoma_project/combined_model/analysis.py",
+    "src/glaucoma_project/segmentation",
+    "src/glaucoma_project/image_model/predict.py",
+    "src/glaucoma_project/data",
+    "src/glaucoma_project/evaluation",
+    "src/glaucoma_project/runtime.py",
+    "src/glaucoma_project/files.py",
+    "src/glaucoma_project/freeze.py",
+    "configs/x6.yaml",
+    "configs/x6_multitask.yaml",
+    "configs/p01_image_only.yaml"
+  ],
+  "files": {
+    "seed2440": {
+      "path": "runs/x6/x6_multitask_seed2440/best.pt",
+      "sha256": "1f9bacd714940ccf4dd0cb91fa66ac60c708037bcb892f3978f8e89c9c8641c5"
+    },
+    "seed2441": {
+      "path": "runs/x6/x6_multitask_seed2441/best.pt",
+      "sha256": "985bb3d17dbc3fc521c1db756affe4b4ed3e30810871fe3ad6709aaffe4c4fff"
+    },
+    "seed2442": {
+      "path": "runs/x6/x6_multitask_seed2442/best.pt",
+      "sha256": "b58170687357b124e9d7f70dbaa6c0a6f61630ae02c6712ea09e5f15eb4d9940"
+    },
+    "seed2443": {
+      "path": "runs/x6/x6_multitask_seed2443/best.pt",
+      "sha256": "be27e78cc2f083891230e39c304a93dc8cdae1873ac324ea9005f902c5e74caf"
+    },
+    "seed2444": {
+      "path": "runs/x6/x6_multitask_seed2444/best.pt",
+      "sha256": "85ab2282b5012b9c90398d7e97cda13982a16d9891c3cdb27d5104cb1bc9e867"
+    },
+    "common_split": {
+      "path": "splits/all.csv",
+      "sha256": "4590df4ee6e6ce8ed722786cdb49220b632468184222fb9760c396e5cbf37094"
+    }
+  },
+  "settings": {
+    "study": {
+      "name": "x6",
+      "variant_config": "configs/x6_multitask.yaml",
+      "baseline_config": "configs/p01_image_only.yaml",
+      "baseline_scores": "runs/p01/final",
+      "seeds": [
+        2440,
+        2441,
+        2442,
+        2443,
+        2444
+      ],
+      "gate_seeds": [
+        2440,
+        2441,
+        2442
+      ],
+      "source_camera": "Remidio",
+      "runs_dir": "runs/x6",
+      "n_bootstrap": 2000,
+      "bootstrap_seed": 2440
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "git_commit": "7c31341bab746d0720eef2aee5d5ec41acfb4294",
+  "code_paths": [
+    "src/glaucoma_project/segmentation",
+    "src/glaucoma_project/data",
+    "src/glaucoma_project/measurements",
+    "src/glaucoma_project/classification",
+    "src/glaucoma_project/evaluation",
+    "src/glaucoma_project/runtime.py",
+    "src/glaucoma_project/files.py",
+    "src/glaucoma_project/freeze.py",
+    "src/glaucoma_project/combined_model/variant_study.py",
+    "configs/x5.yaml",
+    "configs/x5_robust.yaml",
+    "configs/baseline_a.yaml"
+  ],
+  "files": {
+    "segmentation_weights": {
+      "path": "runs/x5/final/best.pt",
+      "sha256": "699f13bff3482cbf900993b3c5d91310daa0c574bb139afb5dfe0fb38c54bc16"
+    },
+    "classifier": {
+      "path": "runs/x5/final/classifier.joblib",
+      "sha256": "20bf04eab81fbe57582f16e836aa8ff632c033099e9987419b8b668565628131"
+    },
+    "common_split": {
+      "path": "splits/all.csv",
+      "sha256": "4590df4ee6e6ce8ed722786cdb49220b632468184222fb9760c396e5cbf37094"
+    },
+    "baseline_a_scores": {
+      "path": "runs/final/common_split/scores.csv",
+      "sha256": "a70ec387b95a133a85f136564576460da142fd81dfeca786a727cba0dc8976df"
+    }
+  },
+  "settings": {
+    "study": {
+      "name": "x5",
+      "runs_dir": "runs/x5",
+      "variant_config": "configs/x5_robust.yaml",
+      "baseline_config": "configs/x5_baseline.yaml",
+      "source_camera": "Remidio",
+      "gate_seeds": [
+        2440,
+        2441,
+        2442
+      ],
+      "max_remidio_loss": 0.01,
+      "final_seed": 2440,
+      "classifier_config": "configs/baseline_a.yaml",
+      "baseline_scores": "runs/final/common_split/scores.csv",
+      "n_bootstrap": 2000,
+      "bootstrap_seed": 2440
+    }
+  }
+}

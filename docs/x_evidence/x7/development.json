@@ -1,0 +1,6 @@
+{
+  "c": 0.01,
+  "n_development_images": 1008,
+  "image_only_auc": 0.8540229788731806,
+  "blend_cv_auc": 0.9442691809801825
+}

@@ -1,0 +1,17 @@
+# X3 variant: the P01 image-only recipe with stronger colour augmentation and per-image normalisation.
+run_name: x3_strong
+model_name: resnet18
+pretrained: true
+seed: 2440                  # overridden per run
+batch_size: 16
+epochs: 25
+warmup_epochs: 2
+patience: 6
+head_lr: 0.0001
+backbone_lr: 0.00001
+weight_decay: 0.0001
+augment: true
+augment_profile: strong            # colour jitter 0.4 (hue 0.1), random gamma 0.7-1.4, greyscale p=0.1
+per_image_normalisation: true      # each image's channels to mean 0, spread 1
+target_sensitivity: 0.9
+n_bootstrap: 1000

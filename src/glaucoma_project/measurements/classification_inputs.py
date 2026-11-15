@@ -10,14 +10,16 @@ from pathlib import Path
 
 import pandas as pd
 import torch
+from torch.utils.data import DataLoader
 
 from glaucoma_project import PREPARED_ROOT, REPO_ROOT
 from glaucoma_project.data.common_split import load_common_split
-from glaucoma_project.data.segmentation import read_image
+from glaucoma_project.data.segmentation import PhotographDataset, read_image
 from glaucoma_project.files import write_json
 from glaucoma_project.freeze import sha256_file, verify_files
 from glaucoma_project.measurements.cdr import measure
 from glaucoma_project.runtime import pick_device
+from glaucoma_project.segmentation.adapt import adapt_batchnorm
 from glaucoma_project.segmentation.predict import load_model, predict_masks
 
 BASELINE_MANIFEST = REPO_ROOT / "docs" / "frozen_baseline_a_common_split.json"
@@ -35,23 +37,41 @@ def predicted_measurements(rows: pd.DataFrame, model, root: Path = PREPARED_ROOT
     return pd.DataFrame(records, columns=["image_id", *RATIOS])
 
 
-def write_measurements(out: Path, manifest: Path = BASELINE_MANIFEST, root: Path = PREPARED_ROOT) -> pd.DataFrame:
-    """Measure every classification image of every split with the network frozen in ``manifest``.
-    Writes ``out`` and ``out.with_suffix('.json')`` (weights hash, counts) and refuses to overwrite."""
+def repo_relative(path: Path) -> str:
+    """``path`` as written in a record, relative to the repository (whether given relative or absolute)."""
+    return str(Path(path).resolve().relative_to(REPO_ROOT))
+
+
+def adapted_measurements(rows: pd.DataFrame, model, root: Path, device: torch.device, batch_size: int = 8) -> pd.DataFrame:
+    """The three ratios of every row, after the model's batch-norm statistics are re-estimated on these rows'
+    photographs (no label or mask is read). The model passed in is not modified."""
+    adapted = adapt_batchnorm(model, DataLoader(PhotographDataset(rows, root), batch_size=batch_size), device)
+    return predicted_measurements(rows, adapted, root, batch_size)
+
+
+def write_measurements(out: Path, manifest: Path = BASELINE_MANIFEST, root: Path = PREPARED_ROOT,
+                       adapt: bool = False) -> pd.DataFrame:
+    """Measure every classification image of every split with the network frozen in ``manifest``; with ``adapt``
+    each split is first used to re-estimate the batch-norm statistics. Writes ``out`` and
+    ``out.with_suffix('.json')`` (weights hash, counts) and refuses to overwrite."""
     if out.exists():
         raise FileExistsError(f"{out} already exists")
     record = verify_files(manifest)
     weights = REPO_ROOT / record["files"]["segmentation_weights"]["path"]
-    model = load_model(weights.parent, device=pick_device())
+    device = pick_device()
+    model = load_model(weights.parent, device=device)
     rows = pd.concat(load_common_split().values(), ignore_index=True)
+    measure_split = (lambda part: adapted_measurements(part, model, root, device)) if adapt else \
+        (lambda part: predicted_measurements(part, model, root))
+    ratios = pd.concat([measure_split(part) for part in load_common_split().values()], ignore_index=True)
     table = rows[["image_id", "dataset", "split", "analysis_group", "binary_label"]].merge(
-        predicted_measurements(rows, model, root), on="image_id", validate="one_to_one")
+        ratios, on="image_id", validate="one_to_one")
     out.parent.mkdir(parents=True, exist_ok=True)
     table.to_csv(out, index=False)
     write_json(out.with_suffix(".json"), {
         "segmentation_weights_sha256": record["files"]["segmentation_weights"]["sha256"],
-        "baseline_manifest": str(manifest.relative_to(REPO_ROOT)), "csv_sha256": sha256_file(out),
-        "images": len(table), "no_disc_found": int(table.vcdr.isna().sum()),
+        "baseline_manifest": repo_relative(manifest), "csv_sha256": sha256_file(out),
+        "adapted_batch_norm": adapt, "images": len(table), "no_disc_found": int(table.vcdr.isna().sum()),
         "images_per_split": table.split.value_counts().to_dict()})
     return table
 
@@ -59,4 +79,8 @@ def write_measurements(out: Path, manifest: Path = BASELINE_MANIFEST, root: Path
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", required=True, type=Path)
-    print(write_measurements(parser.parse_args().out).groupby("split").size())
+    parser.add_argument("--manifest", type=Path, default=BASELINE_MANIFEST,
+                        help="frozen manifest whose segmentation weights are used (default: Baseline A)")
+    parser.add_argument("--adapt", action="store_true", help="re-estimate batch-norm statistics on each split")
+    args = parser.parse_args()
+    print(write_measurements(args.out, args.manifest, adapt=args.adapt).groupby("split").size())

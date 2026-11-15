@@ -14,6 +14,7 @@ Data: **CHAKSU** for development and in-domain testing, **PAPILA** as a fully ex
 | Baseline A | measurements from predicted disc/cup masks | [`docs/baseline_a.md`](docs/baseline_a.md) | `segmentation/`, `measurements/`, `classification/` |
 | Baseline B | the photograph only | [`docs/image_model.md`](docs/image_model.md) | `image_model/` |
 | Combined | both | [`docs/combined_model.md`](docs/combined_model.md) | `combined_model/`, `hpc/` |
+| X-series | variants of the above (robust segmentation, multi-task, blend) | [`docs/x_series.md`](docs/x_series.md) | `segmentation/`, `combined_model/`, `hpc/` |
 
 ## Layout
 
@@ -39,7 +40,7 @@ runs/ data/      local only (git-ignored): outputs and datasets
 
 Needs Python 3.11 or newer. Step 2 needs the datasets, which are not in the repository.
 
-1. **Environment and tests** (about 90 tests, none needs patient data):
+1. **Environment and tests** (about 160 tests, none needs patient data):
    ```bash
    python3 -m venv .venv && source .venv/bin/activate
    pip install -r requirements.txt && pip install -e .
@@ -60,6 +61,7 @@ Needs Python 3.11 or newer. Step 2 needs the datasets, which are not in the repo
    ```
 5. **Combined study (P01)**: ratios for every image, 10 trainings (2 arms x 5 seeds), freeze, one-shot scoring, analysis. The commands, including the job script for the university GPU cluster, are in [`hpc/README.md`](hpc/README.md) the design is in [`docs/experiment_log.md`](docs/experiment_log.md), and `notebooks/05_combined_model.ipynb` shows the results from the saved tables.
 6. **Two-step blend (P01b)**: 25 cross-fitted networks, a logistic regression on the image score and the ratios, freeze, one-shot scoring, analysis. Commands in [`hpc/README.md`](hpc/README.md); results in `notebooks/06_two_step_blend.ipynb`.
+7. **X-series**: seven attempts to improve cross-camera prediction, each with a development gate, a freeze and a one-shot test. Results and what they mean are in [`docs/x_series.md`](docs/x_series.md); commands in [`hpc/README.md`](hpc/README.md); `notebooks/07_x_series.ipynb` shows the saved tables.
 
 Every run writes its configuration, git commit and metrics to its own folder under `runs/`. Test sets are evaluated once, after the model and threshold are frozen; the code refuses a second evaluation.
 

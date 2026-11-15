@@ -1,0 +1,41 @@
+{
+  "git_commit": "c79c61b6dd59313e38e20ad6abdafc994c5590cf",
+  "code_paths": [
+    "src/glaucoma_project/classification",
+    "src/glaucoma_project/evaluation",
+    "src/glaucoma_project/freeze.py",
+    "src/glaucoma_project/files.py",
+    "configs/x1.yaml"
+  ],
+  "files": {
+    "measurements": {
+      "path": "runs/p01/measurements.csv",
+      "sha256": "3f0466e2ddc906996c6b41aa7962f884aa00a976fe189f26969d4d30998850c5"
+    },
+    "common_split": {
+      "path": "splits/all.csv",
+      "sha256": "4590df4ee6e6ce8ed722786cdb49220b632468184222fb9760c396e5cbf37094"
+    }
+  },
+  "settings": {
+    "study": {
+      "measurements": "runs/p01/measurements.csv",
+      "features": [
+        "vcdr",
+        "hcdr",
+        "area_cdr"
+      ],
+      "c_grid": [
+        0.001,
+        0.01,
+        0.1,
+        1,
+        10,
+        100
+      ],
+      "cv_folds": 5,
+      "seed": 2440,
+      "n_bootstrap": 2000
+    }
+  }
+}

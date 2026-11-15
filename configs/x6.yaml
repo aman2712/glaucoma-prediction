@@ -1,0 +1,12 @@
+# X6 study (design in docs/experiment_log.md, "X-series design" and the X6 clarification): a multi-task
+# network against the P01 image-only model.
+name: x6
+variant_config: configs/x6_multitask.yaml
+baseline_config: configs/p01_image_only.yaml
+baseline_scores: runs/p01/final        # test scores of the P01 image-only runs (on the cluster)
+seeds: [2440, 2441, 2442, 2443, 2444]
+gate_seeds: [2440, 2441, 2442]
+source_camera: Remidio
+runs_dir: runs/x6
+n_bootstrap: 2000
+bootstrap_seed: 2440

@@ -33,3 +33,10 @@ Same environment and data as P01. The design is in `docs/experiment_log.md` ("P0
 4. `python -m glaucoma_project.combined_model.blend_study score --out runs/p01b/final` (GPU, once), then
    `python -m glaucoma_project.combined_model.blend_study analyse --scores runs/p01b/final --out runs/p01b/analysis`.
    Commit `docs/frozen_p01b.json` and the analysis tables.
+
+## X-series runs
+The design is in `docs/experiment_log.md` ("X-series design"), the write-up in `docs/x_series.md`. Every study has a config `configs/xN.yaml`, and each freeze is committed as `docs/frozen_xN.json`. Run from the repository root; the cluster allows two running jobs per user.
+- **X2, X3, X4 (image variants).** `sbatch --export=ALL,STUDY=configs/xN.yaml hpc/variant_gate.sbatch`, then `python -m glaucoma_project.combined_model.variant_study configs/xN.yaml gate-verdict`. Only a variant that passes goes on: `hpc/variant_train.sbatch` (5 seeds), then `freeze`, `score --out runs/xN/final` (once) and `analyse`.
+- **X5 (robust segmentation).** `sbatch --export=ALL,STUDY=configs/x5.yaml hpc/segmentation_gate.sbatch`, then `python -m glaucoma_project.segmentation.robust_study configs/x5.yaml gate-verdict`. If it passes: `hpc/segmentation_final.sbatch` (train and fit the classifier), then `python -m glaucoma_project.segmentation.robust_final configs/x5.yaml freeze` and `score --out runs/x5/test` (once).
+- **X6 (multi-task).** Copy the P01 image-only gate scores of X2 into `runs/x6/gate/baseline_seed*/`, then `hpc/multitask_gate.sbatch`, `variant_study ... gate-verdict`, `hpc/multitask_train.sbatch`, then `multitask_study configs/x6.yaml freeze`, `score --out runs/x6/final` (once) and `variant_study configs/x6.yaml analyse`.
+- **X7 (blend with the X5 ratios).** `sbatch hpc/x7_measurements.sbatch` writes the X5 ratios of every image, then `ratio_blend_study configs/x7.yaml fit`, `freeze`, `score --out runs/x7/final` (once) and `analyse`. The CPU steps run with `srun --cpus-per-task=4 --mem=8G`.

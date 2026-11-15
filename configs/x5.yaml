@@ -6,3 +6,9 @@ baseline_config: configs/x5_baseline.yaml
 source_camera: Remidio
 gate_seeds: [2440, 2441, 2442]
 max_remidio_loss: 0.01
+# Final stage (after the gate passed; the settings were fixed in the X5 clarification).
+final_seed: 2440
+classifier_config: configs/baseline_a.yaml
+baseline_scores: runs/final/common_split/scores.csv   # frozen Baseline A test scores (on the cluster)
+n_bootstrap: 2000
+bootstrap_seed: 2440

@@ -1,0 +1,12 @@
+{
+  "variant": {
+    "shifted_dice": 0.9362137019634247,
+    "remidio_validation_dice": 0.9417539437611898,
+    "shifted_dice_without_adabn": 0.9393478035926819
+  },
+  "baseline": {
+    "shifted_dice": 0.9323399166266123,
+    "remidio_validation_dice": 0.9454037547111511
+  },
+  "passes": true
+}

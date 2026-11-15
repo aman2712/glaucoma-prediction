@@ -1,0 +1,16 @@
+# X7 study (design in docs/experiment_log.md, "X-series design" and the X7 clarification): the P01b blend with
+# the ratios of the robust segmentation network (X5). The image scores are those of P01b.
+name: x7
+runs_dir: runs/x7
+image_runs_dir: runs/p01b            # held-out fold scores of the 25 P01b networks (development images)
+image_scores: runs/p01b/final        # the frozen P01b test image logits and blend scores
+measurements: runs/x5/measurements.csv   # ratios of the X5 network, batch-norm adapted on each split
+references:                          # the first is the primary comparison
+  x5 measurements only: runs/x5/test/scores.csv
+  baseline a: runs/final/common_split/scores.csv
+n_folds: 5
+fold_seed: 2440
+seeds: [2440, 2441, 2442, 2443, 2444]
+c_grid: [0.001, 0.01, 0.1, 1, 10, 100]
+n_bootstrap: 2000
+bootstrap_seed: 2440

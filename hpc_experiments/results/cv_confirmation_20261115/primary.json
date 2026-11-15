@@ -1,0 +1,8 @@
+{
+  "mean_paired_fold_auroc_difference": 0.030221388220649414,
+  "lower_95": 0.00626884725547437,
+  "upper_95": 0.05342573854900526,
+  "valid_bootstrap_resamples": 2000,
+  "success_rule_met": true,
+  "interpretation": "Development split sensitivity analysis after model selection; not independent clinical validation"
+}
